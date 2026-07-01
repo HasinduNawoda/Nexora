@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import type { CategoryFilter } from "../types";
 import { CATEGORIES } from "../types";
 
@@ -14,6 +15,8 @@ export default function Header({
   query,
   onQueryChange,
 }: HeaderProps) {
+  const navigate = useNavigate();
+
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-[#F7F8FA]/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
@@ -53,6 +56,7 @@ export default function Header({
 
         <button
           type="button"
+          onClick={() => navigate("/admin")}
           className="shrink-0 rounded-md bg-[#0B0F1A] px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#1a2238] focus:outline-none focus:ring-2 focus:ring-[#3D5AFE]/40"
         >
           Admin
