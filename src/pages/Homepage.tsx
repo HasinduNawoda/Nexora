@@ -1,13 +1,43 @@
-import { useMemo, useState } from "react";
-import type { CategoryFilter } from "../types";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import type { Article, CategoryFilter } from "../types";
+import { CATEGORIES } from "../types";
 import { ARTICLES } from "../data/articles";
 import Header from "../components/Header";
 import FeaturedArticle from "../components/FeaturedArticle";
 import ArticleRow from "../components/ArticleRow";
 import Footer from "../components/Footer";
 
+function isValidCategory(value: string | null): value is CategoryFilter {
+  return value !== null && (CATEGORIES as readonly string[]).includes(value);
+}
+
 export default function Homepage() {
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("All");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Category state is seeded from the URL (e.g. footer links to
+  // /?category=AI) and kept in sync as the reader clicks around, so the
+  // current filter is always shareable/bookmarkable.
+  const [activeCategory, setActiveCategoryState] = useState<CategoryFilter>(() => {
+    const fromUrl = searchParams.get("category");
+    return isValidCategory(fromUrl) ? fromUrl : "All";
+  });
+
+  // The useState initializer above only runs on first mount. Clicking a
+  // footer/header category link while already on Homepage updates the URL
+  // but does NOT remount this component, so without this effect
+  // activeCategory would silently go stale and ignore the new URL.
+  useEffect(() => {
+    const fromUrl = searchParams.get("category");
+    const next = isValidCategory(fromUrl) ? fromUrl : "All";
+    setActiveCategoryState((current) => (current === next ? current : next));
+  }, [searchParams]);
+
+  const setActiveCategory = (category: CategoryFilter) => {
+    setActiveCategoryState(category);
+    setSearchParams(category === "All" ? {} : { category }, { replace: true });
+  };
+
   const [query, setQuery] = useState("");
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
@@ -16,6 +46,21 @@ export default function Homepage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const toggleExpanded = (id: number) => {
     setExpandedId((current) => (current === id ? null : id));
+  };
+
+  // Picking a search suggestion should reliably land on that article,
+  // wherever it lives — so it clears any filter that might hide it, expands
+  // it in place, and scrolls it into view rather than jumping to the top.
+  const handleSelectFromSearch = (article: Article) => {
+    setActiveCategory("All");
+    setQuery("");
+    setExpandedId(article.id);
+    requestAnimationFrame(() => {
+      document.getElementById(`article-${article.id}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
   };
 
   const filtered = useMemo(
@@ -46,12 +91,13 @@ export default function Homepage() {
         onCategoryChange={setActiveCategory}
         query={query}
         onQueryChange={setQuery}
+        articles={ARTICLES}
+        onSelectArticle={handleSelectFromSearch}
       />
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-          {featured && showHero && (
-           <FeaturedArticle article={featured} />
-            )}
+        {featured && showHero && <FeaturedArticle article={featured} />}
+
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-mono text-xs uppercase tracking-widest text-slate-400">
             Latest signal

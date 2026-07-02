@@ -1,12 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import type { CategoryFilter } from "../types";
+import type { Article, CategoryFilter } from "../types";
 import { CATEGORIES } from "../types";
+import SearchBar from "./SearchBar";
 
 interface HeaderProps {
   activeCategory: CategoryFilter;
   onCategoryChange: (category: CategoryFilter) => void;
   query: string;
   onQueryChange: (query: string) => void;
+  articles: Article[];
+  onSelectArticle: (article: Article) => void;
 }
 
 export default function Header({
@@ -14,6 +17,8 @@ export default function Header({
   onCategoryChange,
   query,
   onQueryChange,
+  articles,
+  onSelectArticle,
 }: HeaderProps) {
   const navigate = useNavigate();
 
@@ -28,30 +33,14 @@ export default function Header({
         </a>
 
         <div className="hidden flex-1 justify-center px-4 md:flex">
-          <label className="relative w-full max-w-sm">
-            <span className="sr-only">Search articles</span>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => onQueryChange(e.target.value)}
-              placeholder="Search articles…"
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 pl-8 font-mono text-sm text-slate-700 placeholder:text-slate-400 transition-colors focus:border-[#3D5AFE] focus:outline-none focus:ring-2 focus:ring-[#3D5AFE]/30"
-            />
-            <svg
-              className="pointer-events-none absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </label>
+          <SearchBar
+            articles={articles}
+            query={query}
+            onQueryChange={onQueryChange}
+            onSelectArticle={onSelectArticle}
+            showShortcutHint
+            className="max-w-xl"
+          />
         </div>
 
         <button
@@ -64,30 +53,12 @@ export default function Header({
       </div>
 
       <div className="px-4 pb-3 md:hidden sm:px-6">
-        <label className="relative block w-full">
-          <span className="sr-only">Search articles</span>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => onQueryChange(e.target.value)}
-            placeholder="Search articles…"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 pl-8 font-mono text-sm text-slate-700 placeholder:text-slate-400 focus:border-[#3D5AFE] focus:outline-none focus:ring-2 focus:ring-[#3D5AFE]/30"
-          />
-          <svg
-            className="pointer-events-none absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </label>
+        <SearchBar
+          articles={articles}
+          query={query}
+          onQueryChange={onQueryChange}
+          onSelectArticle={onSelectArticle}
+        />
       </div>
 
       <nav

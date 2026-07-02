@@ -24,14 +24,14 @@ export default function ArticleRow({
   // never touches scroll position, and never reorders the list.
   if (isExpanded) {
     return (
-      <div className="my-6">
+      <div id={`article-${article.id}`} className="my-6 scroll-mt-24">
         <ArticleCard article={article} expanded onToggle={onToggle} />
       </div>
     );
   }
 
   return (
-    <div className="border-b border-slate-200">
+    <div id={`article-${article.id}`} className="scroll-mt-24 border-b border-slate-200">
       <button
         type="button"
         aria-expanded={false}
