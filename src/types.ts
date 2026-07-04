@@ -10,6 +10,50 @@ export type CategoryName = "AI" | "Security" | "Dev" | "Hardware" | "Emerging";
 
 export type ArticleStatus = "DRAFT" | "PUBLISHED";
 
+// Rich content is modeled as an ordered list of typed blocks rather than a
+// single content string. This is what lets the editor interleave headings,
+// paragraphs, images, video (uploaded or YouTube), and audio in any order
+// the author writes them in. The backend's Article.content column (see
+// SECURITY/DATABASE notes in the project brief) stores exactly this shape
+// as JSON, so this stays a drop-in match for the future API response.
+export interface HeadingBlock {
+  id: string;
+  type: "heading";
+  text: string;
+}
+
+export interface ParagraphBlock {
+  id: string;
+  type: "paragraph";
+  text: string;
+}
+
+export interface ImageBlock {
+  id: string;
+  type: "image";
+  /** Data URL (local upload) or remote URL. */
+  url: string;
+  caption?: string;
+}
+
+export interface VideoBlock {
+  id: string;
+  type: "video";
+  source: "upload" | "youtube";
+  /** Object/data URL for an upload, or a normalized YouTube embed URL. */
+  url: string;
+  caption?: string;
+}
+
+export interface AudioBlock {
+  id: string;
+  type: "audio";
+  url: string;
+  caption?: string;
+}
+
+export type ContentBlock = HeadingBlock | ParagraphBlock | ImageBlock | VideoBlock | AudioBlock;
+
 export interface Article {
   id: number;
   /** Zero-padded display index, e.g. "01". Cosmetic only — not a DB field. */
@@ -19,8 +63,8 @@ export interface Article {
   /** URL slug, e.g. "gpt-5-6-explained" → /articles/gpt-5-6-explained */
   slug?: string;
   excerpt: string;
-  /** Full body, as paragraphs — shown inline when a reader expands the row. */
-  content: string[];
+  /** Full body, as an ordered list of rich content blocks. */
+  content: ContentBlock[];
   author?: string;
   /** ISO date string from the backend; formatted for display in the UI layer. */
   date: string;
@@ -29,6 +73,8 @@ export interface Article {
   featured?: boolean;
   status?: ArticleStatus;
   imagePath?: string;
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 export const CATEGORIES: readonly ("All" | CategoryName)[] = [

@@ -60,11 +60,14 @@ export default function ArticleRow({
 
         <div
           aria-hidden="true"
-          className={`hidden h-16 w-24 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br sm:flex ${CATEGORY_GRADIENT[article.category]}`}
+          className={`hidden h-16 w-24 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br bg-cover bg-center sm:flex ${CATEGORY_GRADIENT[article.category]}`}
+          style={article.imagePath ? { backgroundImage: `url(${article.imagePath})` } : undefined}
         >
-          <span className="font-display text-sm font-bold text-white/30 select-none">
-            {article.index}
-          </span>
+          {!article.imagePath && (
+            <span className="font-display text-sm font-bold text-white/30 select-none">
+              {article.index}
+            </span>
+          )}
         </div>
 
         <div className="min-w-0 flex-1">

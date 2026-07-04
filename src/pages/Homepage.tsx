@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { Article, CategoryFilter } from "../types";
 import { CATEGORIES } from "../types";
-import { ARTICLES } from "../data/articles";
+import { getArticles, subscribe } from "../lib/store";
 import Header from "../components/Header";
 import FeaturedArticle from "../components/FeaturedArticle";
 import ArticleRow from "../components/ArticleRow";
@@ -63,14 +63,24 @@ export default function Homepage() {
     });
   };
 
+  // Live-loaded from the shared store (localStorage-backed today, a real
+  // API once the backend exists) so anything published in the admin editor
+  // shows up here without hardcoding it in a second place.
+  const [allArticles, setAllArticles] = useState<Article[]>([]);
+  useEffect(() => {
+    const load = () => setAllArticles(getArticles().filter((a) => a.status === "PUBLISHED"));
+    load();
+    return subscribe(load);
+  }, []);
+
   const filtered = useMemo(
     () =>
-      ARTICLES.filter((a) => {
+      allArticles.filter((a) => {
         const matchesCategory = activeCategory === "All" || a.category === activeCategory;
         const matchesQuery = a.title.toLowerCase().includes(query.trim().toLowerCase());
         return matchesCategory && matchesQuery;
       }),
-    [activeCategory, query]
+    [allArticles, activeCategory, query]
   );
 
   // The lead story is always whichever article is flagged `featured` (falls
@@ -91,7 +101,7 @@ export default function Homepage() {
         onCategoryChange={setActiveCategory}
         query={query}
         onQueryChange={setQuery}
-        articles={ARTICLES}
+        articles={allArticles}
         onSelectArticle={handleSelectFromSearch}
       />
 
