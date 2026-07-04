@@ -1,15 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
-import type { Article, CategoryName } from "../../types";
-
-const ALL_ARTICLES: Article[] = [
-  { id: 1, index: "01", category: "AI", title: "Inside the architecture choices behind the next wave of small language models", slug: "architecture-choices-small-language-models", excerpt: "Why teams are trading raw parameter count for retrieval, tool use, and tighter context.", content: [], author: "Maya Lindqvist", date: "Jun 29, 2026", readTime: "6 min", views: "12.4k", status: "PUBLISHED", featured: true },
-  { id: 2, index: "02", category: "Security", title: "A new class of supply-chain attack is hiding inside CI/CD caching layers", slug: "supply-chain-attack-cicd-caching", excerpt: "Researchers disclose a technique that poisons build caches rather than packages themselves.", content: [], author: "Devon Okafor", date: "Jun 29, 2026", readTime: "4 min", views: "8.1k", status: "PUBLISHED" },
-  { id: 3, index: "03", category: "Dev", title: "Spring Boot 4 quietly changed how it handles virtual threads — here's what breaks", slug: "spring-boot-4-virtual-threads", excerpt: "A practical migration guide for teams moving high-throughput services onto the new executor model.", content: [], author: "Priya Raman", date: "Jun 28, 2026", readTime: "7 min", views: "5.6k", status: "PUBLISHED" },
-  { id: 4, index: "04", category: "Hardware", title: "On-device inference chips are getting cheap enough to matter for indie developers", slug: "on-device-inference-chips-indie", excerpt: "A look at the new generation of sub-$50 NPUs and what they unlock for offline-first mobile apps.", content: [], author: "Tom Whitfield", date: "Jun 27, 2026", readTime: "5 min", views: "3.9k", status: "DRAFT" },
-  { id: 5, index: "05", category: "Emerging", title: "What 'agentic' actually means once you strip the marketing away", slug: "what-agentic-actually-means", excerpt: "A grounded technical breakdown of planning, memory, and tool-calling loops.", content: [], author: "Maya Lindqvist", date: "Jun 26, 2026", readTime: "9 min", views: "15.2k", status: "PUBLISHED" },
-];
+import type { CategoryName } from "../../types";
+import { getArticles, deleteArticle, subscribe } from "../../lib/store";
 
 const CATEGORY_DOT: Record<CategoryName, string> = {
   AI: "bg-indigo-500",
@@ -24,7 +17,16 @@ export default function ArticleList() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "PUBLISHED" | "DRAFT">("all");
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
-  const [articles, setArticles] = useState(ALL_ARTICLES);
+  const [articles, setArticles] = useState(() => getArticles());
+
+  // Re-read from the store whenever it changes (e.g. after publishing a new
+  // article from the editor) and whenever this list mounts, so the list is
+  // never showing a stale snapshot.
+  useEffect(() => {
+    const load = () => setArticles(getArticles());
+    load();
+    return subscribe(load);
+  }, []);
 
   const filtered = articles.filter((a) => {
     const matchesQuery = a.title.toLowerCase().includes(query.toLowerCase());
@@ -34,7 +36,7 @@ export default function ArticleList() {
 
   const confirmDelete = () => {
     if (deleteTargetId === null) return;
-    setArticles((prev) => prev.filter((a) => a.id !== deleteTargetId));
+    deleteArticle(deleteTargetId);
     setDeleteTargetId(null);
   };
 

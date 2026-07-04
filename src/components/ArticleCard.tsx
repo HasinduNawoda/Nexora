@@ -1,6 +1,7 @@
 import type { Article } from "../types";
 import Tag from "./Tag";
 import { CATEGORY_GRADIENT } from "../lib/categoryStyles";
+import ArticleBody from "./ArticleBody";
 
 interface ArticleCardProps {
   article: Article;
@@ -33,11 +34,14 @@ export default function ArticleCard({
       >
         <div className="flex flex-col md:flex-row">
           <div
-            className={`flex h-48 items-center justify-center bg-gradient-to-br md:h-auto md:w-2/5 ${CATEGORY_GRADIENT[article.category]}`}
+            className={`flex h-48 items-center justify-center bg-gradient-to-br bg-cover bg-center md:h-auto md:w-2/5 ${CATEGORY_GRADIENT[article.category]}`}
+            style={article.imagePath ? { backgroundImage: `url(${article.imagePath})` } : undefined}
           >
-            <span className="font-display text-5xl font-bold text-white/20 select-none" aria-hidden="true">
-              {article.index}
-            </span>
+            {!article.imagePath && (
+              <span className="font-display text-5xl font-bold text-white/20 select-none" aria-hidden="true">
+                {article.index}
+              </span>
+            )}
           </div>
           <div className="flex flex-1 flex-col justify-center p-6 sm:p-8">
             <div className="mb-3 flex items-center gap-2">
@@ -77,6 +81,11 @@ export default function ArticleCard({
           </div>
         </div>
       </button>
+      {expanded && (
+        <div className="border-t border-slate-200 px-6 py-6 sm:px-8">
+          <ArticleBody blocks={article.content} />
+        </div>
+      )}
     </div>
   );
 }

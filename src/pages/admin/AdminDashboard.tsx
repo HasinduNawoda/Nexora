@@ -1,22 +1,8 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
-import type { Article, CategoryName } from "../../types";
-
-// Stub data — replace with API fetch when backend is ready
-const STATS = [
-  { label: "Total Articles", value: "24", delta: "+3 this week", up: true },
-  { label: "Published", value: "19", delta: "79% of total", up: true },
-  { label: "Drafts", value: "5", delta: "Needs review", up: false },
-  { label: "Total Views", value: "86.4k", delta: "+12% vs last month", up: true },
-];
-
-const RECENT_ARTICLES: Pick<Article, "id" | "title" | "category" | "status" | "date" | "views">[] = [
-  { id: 1, title: "Inside the architecture choices behind the next wave of small language models", category: "AI", status: "PUBLISHED", date: "Jun 29, 2026", views: "12.4k" },
-  { id: 2, title: "A new class of supply-chain attack is hiding inside CI/CD caching layers", category: "Security", status: "PUBLISHED", date: "Jun 29, 2026", views: "8.1k" },
-  { id: 3, title: "Spring Boot 4 quietly changed how it handles virtual threads", category: "Dev", status: "PUBLISHED", date: "Jun 28, 2026", views: "5.6k" },
-  { id: 4, title: "On-device inference chips are getting cheap enough to matter for indie developers", category: "Hardware", status: "DRAFT", date: "Jun 27, 2026", views: "3.9k" },
-  { id: 5, title: "What 'agentic' actually means once you strip the marketing away", category: "Emerging", status: "PUBLISHED", date: "Jun 26, 2026", views: "15.2k" },
-];
+import type { CategoryName } from "../../types";
+import { getArticles, subscribe } from "../../lib/store";
 
 const CATEGORY_DOT: Record<CategoryName, string> = {
   AI: "bg-indigo-500",
@@ -47,8 +33,44 @@ function StatCard({ label, value, delta, up }: { label: string; value: string; d
   );
 }
 
+function parseViews(v: string) {
+  const n = parseFloat(v);
+  if (v.toLowerCase().includes("k")) return n * 1000;
+  return n || 0;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [articles, setArticles] = useState(() => getArticles());
+
+  useEffect(() => {
+    const load = () => setArticles(getArticles());
+    load();
+    return subscribe(load);
+  }, []);
+
+  const published = articles.filter((a) => a.status === "PUBLISHED");
+  const drafts = articles.filter((a) => a.status === "DRAFT");
+  const totalViews = articles.reduce((sum, a) => sum + parseViews(a.views), 0);
+
+  const STATS = [
+    { label: "Total Articles", value: String(articles.length), delta: `${articles.length} total`, up: true },
+    {
+      label: "Published",
+      value: String(published.length),
+      delta: articles.length ? `${Math.round((published.length / articles.length) * 100)}% of total` : "—",
+      up: true,
+    },
+    { label: "Drafts", value: String(drafts.length), delta: drafts.length ? "Needs review" : "All clear", up: drafts.length === 0 },
+    {
+      label: "Total Views",
+      value: totalViews >= 1000 ? `${(totalViews / 1000).toFixed(1)}k` : String(totalViews),
+      delta: "Across all articles",
+      up: true,
+    },
+  ];
+
+  const RECENT_ARTICLES = articles.slice(0, 5);
 
   return (
     <AdminLayout
