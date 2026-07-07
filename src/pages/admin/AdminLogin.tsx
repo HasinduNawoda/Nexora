@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Logo from "../../components/Logo";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -41,12 +42,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 shadow">
-            <span className="h-2.5 w-2.5 rounded-full bg-white" />
-          </div>
-          <span className="font-display text-xl font-bold tracking-tight text-zinc-900">
-            NEX<span className="text-indigo-600">ORA</span>
-          </span>
+          <Logo variant="admin" size="lg" linkTo={null} />
           <p className="font-mono text-xs text-zinc-400 uppercase tracking-widest">Admin Portal</p>
         </div>
 

@@ -1,7 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type { Article, CategoryFilter } from "../types";
 import { CATEGORIES } from "../types";
 import SearchBar from "./SearchBar";
+import Logo from "./Logo";
 
 interface HeaderProps {
   activeCategory: CategoryFilter;
@@ -28,12 +29,7 @@ export default function Header({
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-[#F7F8FA]/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-        <Link to="/" onClick={onLogoClick} className="flex items-center gap-2 shrink-0">
-          <span className="h-2 w-2 rounded-full bg-[#3D5AFE] animate-pulse" aria-hidden="true" />
-          <span className="font-display text-lg font-bold tracking-tight text-[#0B0F1A]">
-            NEX<span className="text-[#3D5AFE]">ORA</span>
-          </span>
-        </Link>
+        <Logo onClick={onLogoClick} />
 
         <div className="hidden flex-1 justify-center px-4 md:flex">
           <SearchBar

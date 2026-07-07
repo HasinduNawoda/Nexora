@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import Logo from "../Logo";
 
 interface NavItem {
   label: string;
@@ -54,14 +55,7 @@ function Sidebar({ collapsed, onCollapse }: { collapsed: boolean; onCollapse: ()
     >
       {/* Logo */}
       <div className="flex h-14 items-center justify-between border-b border-zinc-200 px-3">
-        {!collapsed && (
-          <Link to="/" className="flex items-center gap-2" title="Back to homepage">
-            <span className="h-2 w-2 rounded-full bg-indigo-600" />
-            <span className="font-display text-sm font-bold text-zinc-900">
-              NEX<span className="text-indigo-600">ORA</span>
-            </span>
-          </Link>
-        )}
+        {!collapsed && <Logo variant="admin" size="sm" title="Back to homepage" />}
         <button
           onClick={onCollapse}
           className="ml-auto rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
