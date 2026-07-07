@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Article, CategoryFilter } from "../types";
 import { CATEGORIES } from "../types";
 import SearchBar from "./SearchBar";
@@ -10,6 +10,8 @@ interface HeaderProps {
   onQueryChange: (query: string) => void;
   articles: Article[];
   onSelectArticle: (article: Article) => void;
+  /** Extra reset logic to run when the logo is clicked (e.g. clearing a search box), on top of the navigation to "/". Optional — the Link always navigates home regardless. */
+  onLogoClick?: () => void;
 }
 
 export default function Header({
@@ -19,18 +21,19 @@ export default function Header({
   onQueryChange,
   articles,
   onSelectArticle,
+  onLogoClick,
 }: HeaderProps) {
   const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-[#F7F8FA]/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-        <a href="#" className="flex items-center gap-2 shrink-0">
+        <Link to="/" onClick={onLogoClick} className="flex items-center gap-2 shrink-0">
           <span className="h-2 w-2 rounded-full bg-[#3D5AFE] animate-pulse" aria-hidden="true" />
           <span className="font-display text-lg font-bold tracking-tight text-[#0B0F1A]">
             NEX<span className="text-[#3D5AFE]">ORA</span>
           </span>
-        </a>
+        </Link>
 
         <div className="hidden flex-1 justify-center px-4 md:flex">
           <SearchBar
@@ -71,7 +74,7 @@ export default function Header({
             type="button"
             aria-pressed={activeCategory === cat}
             onClick={() => onCategoryChange(cat)}
-            className={`whitespace-nowrap rounded-full px-3 py-1 font-mono text-xs font-medium uppercase tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-[#3D5AFE]/40 ${
+            className={`cursor-pointer whitespace-nowrap rounded-full px-3 py-1 font-mono text-xs font-medium uppercase tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-[#3D5AFE]/40 ${
               activeCategory === cat
                 ? "bg-[#0B0F1A] text-white"
                 : "text-slate-500 hover:bg-slate-100"

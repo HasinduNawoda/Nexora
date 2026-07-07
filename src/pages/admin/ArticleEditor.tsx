@@ -4,6 +4,7 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import ArticleBody from "../../components/ArticleBody";
 import type { CategoryName, ArticleStatus, ContentBlock } from "../../types";
 import { getArticle, saveArticle } from "../../lib/store";
+import addNewBlockIcon from "../../assets/add-new-block.png";
 
 const CATEGORIES: CategoryName[] = ["AI", "Security", "Dev", "Hardware", "Emerging"];
 
@@ -544,11 +545,9 @@ function BlockInserter({ onPick, label }: { onPick: (type: ContentBlock["type"])
           type="button"
           onClick={() => setOpen(true)}
           title={label}
-          className="flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-zinc-300 text-zinc-400 opacity-0 transition-opacity hover:border-indigo-400 hover:text-indigo-600 group-hover/block:opacity-100 focus:opacity-100"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-zinc-300 text-zinc-400 transition-colors hover:border-indigo-400 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-200"
         >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <img src={addNewBlockIcon} alt="Add new block" className="h-6 w-6" />
         </button>
       </div>
     );
