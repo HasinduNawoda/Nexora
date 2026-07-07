@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { CATEGORIES } from "../types";
 import { SITE, SOCIAL_LINKS, CONTACT_LINKS } from "../lib/siteConfig";
+import Logo from "./Logo";
 
 // Simplified, generic glyphs (not exact brand marks) — enough to be
 // instantly recognizable without reproducing anyone's trademarked logo art.
@@ -56,12 +57,7 @@ export default function Footer() {
         {/* Brand + social */}
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <div>
-            <Link to="/" className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#3D5AFE]" aria-hidden="true" />
-              <span className="font-display text-lg font-bold text-white">
-                NEX<span className="text-[#3D5AFE]">ORA</span>
-              </span>
-            </Link>
+            <Logo variant="footer" />
             <p className="mt-2 font-mono text-xs text-slate-500">{SITE.tagline}</p>
           </div>
 

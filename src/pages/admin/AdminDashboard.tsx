@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import type { CategoryName } from "../../types";
-import { getArticles, subscribe } from "../../lib/store";
+import { getArticles, deleteArticle, subscribe } from "../../lib/store";
 
 const CATEGORY_DOT: Record<CategoryName, string> = {
   AI: "bg-indigo-500",
@@ -42,12 +42,19 @@ function parseViews(v: string) {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [articles, setArticles] = useState(() => getArticles());
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   useEffect(() => {
     const load = () => setArticles(getArticles());
     load();
     return subscribe(load);
   }, []);
+
+  const confirmDelete = () => {
+    if (deleteTargetId === null) return;
+    deleteArticle(deleteTargetId);
+    setDeleteTargetId(null);
+  };
 
   const published = articles.filter((a) => a.status === "PUBLISHED");
   const drafts = articles.filter((a) => a.status === "DRAFT");
@@ -159,6 +166,7 @@ export default function AdminDashboard() {
                         </svg>
                       </button>
                       <button
+                        onClick={() => setDeleteTargetId(article.id)}
                         className="rounded-md p-1.5 text-zinc-400 hover:bg-red-50 hover:text-red-600"
                         title="Delete"
                       >
@@ -174,6 +182,38 @@ export default function AdminDashboard() {
           </table>
         </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      {deleteTargetId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-xl">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+              <svg className="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+            </div>
+            <h3 className="mb-1 font-display text-base font-semibold text-zinc-900">Delete article?</h3>
+            <p className="mb-5 text-sm text-zinc-500">
+              This action cannot be undone. The article will be permanently removed.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTargetId(null)}
+                className="flex-1 rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
+
   );
 }

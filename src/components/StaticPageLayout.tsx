@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
 import Footer from "./Footer";
+import Logo from "./Logo";
 
 interface StaticPageLayoutProps {
   title: string;
@@ -13,12 +13,7 @@ export default function StaticPageLayout({ title, subtitle, children }: StaticPa
     <div className="min-h-screen bg-[#F7F8FA]">
       <header className="border-b border-slate-200 bg-[#F7F8FA]/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#3D5AFE]" aria-hidden="true" />
-            <span className="font-display text-lg font-bold tracking-tight text-[#0B0F1A]">
-              NEX<span className="text-[#3D5AFE]">ORA</span>
-            </span>
-          </Link>
+          <Logo />
           
         </div>
       </header>
