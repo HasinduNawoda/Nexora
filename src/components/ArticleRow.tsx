@@ -1,41 +1,26 @@
+import { Link } from "react-router-dom";
 import type { Article } from "../types";
 import Tag from "./Tag";
-import ArticleCard from "./ArticleCard";
 import { CATEGORY_GRADIENT } from "../lib/categoryStyles";
 
 interface ArticleRowProps {
   article: Article;
   isHovered: boolean;
   onHover: (id: number | null) => void;
-  isExpanded: boolean;
-  onToggle: () => void;
+  /** Small orange label next to the tag, e.g. "Lead story". Omit for regular rows. */
+  eyebrow?: string;
 }
 
-export default function ArticleRow({
-  article,
-  isHovered,
-  onHover,
-  isExpanded,
-  onToggle,
-}: ArticleRowProps) {
-  // isExpanded/onToggle come from the parent, which tracks a single
-  // expandedId for the whole feed — so opening this row automatically
-  // closes whichever other row was open. Toggling never moves this row,
-  // never touches scroll position, and never reorders the list.
-  if (isExpanded) {
-    return (
-      <div id={`article-${article.id}`} className="my-6 scroll-mt-24">
-        <ArticleCard article={article} expanded onToggle={onToggle} />
-      </div>
-    );
-  }
+// A single row in the list. The whole row is a Link to the article's own
+// page — there's no in-place expansion anymore, so this component doesn't
+// need to know about (or affect) any other row.
+export default function ArticleRow({ article, isHovered, onHover, eyebrow }: ArticleRowProps) {
+  const href = `/articles/${article.slug ?? article.id}`;
 
   return (
     <div id={`article-${article.id}`} className="scroll-mt-24 border-b border-slate-200">
-      <button
-        type="button"
-        aria-expanded={false}
-        onClick={onToggle}
+      <Link
+        to={href}
         onMouseEnter={() => onHover(article.id)}
         onMouseLeave={() => onHover(null)}
         onFocus={() => onHover(article.id)}
@@ -73,6 +58,11 @@ export default function ArticleRow({
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex items-center gap-2">
             <Tag category={article.category} />
+            {eyebrow && (
+              <span className="font-mono text-[11px] uppercase tracking-wide text-[#FF6B35]">
+                {eyebrow}
+              </span>
+            )}
             <span className="font-mono text-[11px] text-slate-400">{article.date}</span>
           </div>
           <h3 className="mb-1.5 font-display text-lg font-semibold leading-snug text-[#0B0F1A] transition-colors group-hover:text-[#3D5AFE] sm:text-xl">
@@ -91,11 +81,11 @@ export default function ArticleRow({
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          className="mt-1.5 h-4 w-4 flex-shrink-0 text-slate-400"
+          className="mt-1.5 h-4 w-4 flex-shrink-0 -rotate-90 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
-      </button>
+      </Link>
     </div>
   );
 }

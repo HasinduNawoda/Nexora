@@ -1,7 +1,7 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop"; 
 import Homepage from "./pages/Homepage";
+import ArticlePage from "./pages/ArticlePage";
 import About from "./pages/About";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import TermsOfService from "./pages/legal/TermsOfService";
@@ -23,6 +23,7 @@ export default function App() {
       <Routes>
         {/* Public */}
         <Route path="/" element={<Homepage />} />
+        <Route path="/articles/:slug" element={<ArticlePage />} />
         <Route path="/about" element={<About />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />

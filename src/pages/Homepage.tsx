@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import type { Article, CategoryFilter } from "../types";
 import { CATEGORIES } from "../types";
 import { getArticles, subscribe } from "../lib/store";
 import Header from "../components/Header";
-import FeaturedArticle from "../components/FeaturedArticle";
 import ArticleRow from "../components/ArticleRow";
 import Footer from "../components/Footer";
 
@@ -13,6 +12,7 @@ function isValidCategory(value: string | null): value is CategoryFilter {
 }
 
 export default function Homepage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Category state is seeded from the URL (e.g. footer links to
@@ -41,26 +41,21 @@ export default function Homepage() {
   const [query, setQuery] = useState("");
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
-  // Only one row can be expanded at a time. Opening a new one collapses
-  // whichever was previously open.
-  const [expandedId, setExpandedId] = useState<number | null>(null);
-  const toggleExpanded = (id: number) => {
-    setExpandedId((current) => (current === id ? null : id));
+  // Clicking the logo is a full reset: back to "/", every filter cleared,
+  // search box emptied. The Link inside Header handles the navigation
+  // itself; this just clears the state that navigation alone wouldn't
+  // touch (query text, and the category if we're already on "/").
+  const handleLogoReset = () => {
+    setActiveCategory("All");
+    setQuery("");
   };
 
   // Picking a search suggestion should reliably land on that article,
-  // wherever it lives — so it clears any filter that might hide it, expands
-  // it in place, and scrolls it into view rather than jumping to the top.
+  // wherever it lives — so it takes the reader straight to that article's
+  // own page rather than trying to reveal it in the current list.
   const handleSelectFromSearch = (article: Article) => {
-    setActiveCategory("All");
     setQuery("");
-    setExpandedId(article.id);
-    requestAnimationFrame(() => {
-      document.getElementById(`article-${article.id}`)?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    });
+    navigate(`/articles/${article.slug ?? article.id}`);
   };
 
   // Live-loaded from the shared store (localStorage-backed today, a real
@@ -84,15 +79,12 @@ export default function Homepage() {
   );
 
   // The lead story is always whichever article is flagged `featured` (falls
-  // back to the first result).
+  // back to the first result). It's still shown first, but now as the same
+  // uniform row size as every other story, just tagged with a "Lead story"
+  // eyebrow instead of getting an oversized card.
   const featured = filtered.find((a) => a.featured) ?? filtered[0];
-
-  // The hero slot only shows while nothing else is expanded. As soon as the
-  // reader expands a different article, the featured article needs to fold
-  // back into the regular list as a normal row (instead of disappearing),
-  // so it's only excluded from `rest` while it's actually being shown above.
-  const showHero = expandedId === null;
-  const rest = showHero ? filtered.filter((a) => a.id !== featured?.id) : filtered;
+  const rest = filtered.filter((a) => a.id !== featured?.id);
+  const ordered = featured ? [featured, ...rest] : rest;
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
@@ -103,28 +95,26 @@ export default function Homepage() {
         onQueryChange={setQuery}
         articles={allArticles}
         onSelectArticle={handleSelectFromSearch}
+        onLogoClick={handleLogoReset}
       />
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        {featured && showHero && <FeaturedArticle article={featured} />}
-
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-mono text-xs uppercase tracking-widest text-slate-400">
             Latest signal
           </h2>
-          <span className="font-mono text-xs text-slate-400">{rest.length} stories</span>
+          <span className="font-mono text-xs text-slate-400">{ordered.length} stories</span>
         </div>
 
         <div>
-          {rest.length > 0 ? (
-            rest.map((article) => (
+          {ordered.length > 0 ? (
+            ordered.map((article) => (
               <ArticleRow
                 key={article.id}
                 article={article}
                 isHovered={hoveredId === article.id}
                 onHover={setHoveredId}
-                isExpanded={expandedId === article.id}
-                onToggle={() => toggleExpanded(article.id)}
+                eyebrow={article.id === featured?.id ? "Lead story" : undefined}
               />
             ))
           ) : (
