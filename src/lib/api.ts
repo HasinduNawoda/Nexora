@@ -1,0 +1,43 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
+let authToken: string | null = localStorage.getItem("nexora_token");
+
+export function setAuthToken(token: string | null) {
+  authToken = token;
+  if (token) localStorage.setItem("nexora_token", token);
+  else localStorage.removeItem("nexora_token");
+}
+
+export function getAuthToken() {
+  return authToken;
+}
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string> | undefined),
+  };
+  if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+
+  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || `Request failed: ${res.status}`);
+  }
+
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return res.json() as Promise<T>;
+  }
+  return undefined as T;
+}
+
+export const api = {
+  get: <T,>(path: string) => request<T>(path),
+  post: <T,>(path: string, body?: unknown) =>
+    request<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined }),
+  put: <T,>(path: string, body?: unknown) =>
+    request<T>(path, { method: "PUT", body: body ? JSON.stringify(body) : undefined }),
+  delete: <T,>(path: string) => request<T>(path, { method: "DELETE" }),
+};

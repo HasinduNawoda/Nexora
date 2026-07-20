@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../components/Logo";
+import { api, setAuthToken } from "../../lib/api";
+
+interface LoginResponse {
+  token: string;
+}
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -15,26 +20,18 @@ export default function AdminLogin() {
     setError("");
     setLoading(true);
 
-    // --- Replace with real API call ---
-    // const res = await fetch("/api/auth/login", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ username, password }),
-    // });
-    // if (!res.ok) { setError("Invalid credentials"); setLoading(false); return; }
-    // const { token } = await res.json();
-    // localStorage.setItem("nexora_admin_token", token);
-    // navigate("/admin");
-
-    // Stub: demo credentials
-    await new Promise((r) => setTimeout(r, 800));
-    if (username === "admin" && password === "password") {
-      localStorage.setItem("nexora_admin_token", "demo-token");
+    try {
+      const { token } = await api.post<LoginResponse>("/api/auth/login", {
+        username,
+        password,
+      });
+      setAuthToken(token);
       navigate("/admin");
-    } else {
+    } catch {
       setError("Invalid username or password.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -125,10 +122,6 @@ export default function AdminLogin() {
             </button>
           </form>
         </div>
-
-        <p className="mt-6 text-center font-mono text-[11px] text-zinc-400">
-          Demo: admin / password
-        </p>
       </div>
     </div>
   );

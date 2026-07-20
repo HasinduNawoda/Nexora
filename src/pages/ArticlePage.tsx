@@ -1,23 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { Article, CategoryFilter } from "../types";
-import { getArticle, getArticleBySlug, getArticles, subscribe } from "../lib/store";
+import { getArticleBySlug, useArticles } from "../lib/store";
 import { CATEGORY_GRADIENT } from "../lib/categoryStyles";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Tag from "../components/Tag";
 import ArticleBody from "../components/ArticleBody";
-
-// Resolves the route param against the store. Slugs are the normal case;
-// falling back to a numeric id keeps old/bookmarked "/articles/7"-style
-// links (or any article saved before it had a slug) working too.
-function resolveArticle(param: string | undefined, articles: Article[]): Article | undefined {
-  if (!param) return undefined;
-  const bySlug = articles.find((a) => a.slug === param);
-  if (bySlug) return bySlug;
-  const asId = Number(param);
-  return Number.isFinite(asId) ? articles.find((a) => a.id === asId) : undefined;
-}
 
 export default function ArticlePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -25,22 +14,23 @@ export default function ArticlePage() {
 
   // Same live-loaded, store-backed list the homepage uses, so search
   // suggestions and category links from this page stay accurate too.
-  const [allArticles, setAllArticles] = useState<Article[]>([]);
-  useEffect(() => {
-    const load = () => setAllArticles(getArticles().filter((a) => a.status === "PUBLISHED"));
-    load();
-    return subscribe(load);
-  }, []);
+  const { articles } = useArticles();
+  const allArticles = articles.filter((a) => a.status === "PUBLISHED");
 
-  const article = useMemo(() => {
-    // Prefer the direct store lookups (they also see DRAFT articles, which
-    // matters for admin preview links); fall back to the published list.
-    return (
-      (slug ? getArticleBySlug(slug) : undefined) ??
-      (slug && Number.isFinite(Number(slug)) ? getArticle(Number(slug)) : undefined) ??
-      resolveArticle(slug, allArticles)
-    );
-  }, [slug, allArticles]);
+  const [article, setArticle] = useState<Article | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!slug) {
+      setArticle(undefined);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    getArticleBySlug(slug)
+      .then(setArticle)
+      .finally(() => setLoading(false));
+  }, [slug]);
 
   useEffect(() => {
     document.title = article ? `${article.metaTitle || article.title} — Nexora` : "Article not found — Nexora";
@@ -56,7 +46,14 @@ export default function ArticlePage() {
     setQuery("");
     navigate(`/articles/${a.slug ?? a.id}`);
   };
-
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
+        <p className="font-mono text-sm text-slate-400">Loading...</p>
+      </div>
+    );
+  }
+  
   if (!article) {
     return (
       <div className="min-h-screen bg-[#F7F8FA]">
