@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import ArticleBody from "../../components/ArticleBody";
 import type { CategoryName, ArticleStatus, ContentBlock } from "../../types";
-import { getArticle, saveArticle } from "../../lib/store";
+import { saveArticle, useArticles } from "../../lib/store";
 import addNewBlockIcon from "../../assets/add-new-block.png";
 
 const CATEGORIES: CategoryName[] = ["AI", "Security", "Dev", "Hardware", "Emerging"];
@@ -99,6 +99,7 @@ export default function ArticleEditor() {
   const isEdit = !!id;
   const navigate = useNavigate();
 
+const { articles } = useArticles();
   const [form, setForm] = useState<FormState>(INITIAL);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -108,7 +109,7 @@ export default function ArticleEditor() {
   // Load the existing article's content into the editor when editing.
   useEffect(() => {
     if (!isEdit || !id) return;
-    const existing = getArticle(Number(id));
+    const existing = articles.find((a) => a.id === Number(id));
     if (!existing) return;
     setForm({
       title: existing.title,
@@ -123,7 +124,7 @@ export default function ArticleEditor() {
       status: existing.status || "DRAFT",
       imagePreview: existing.imagePath || null,
     });
-  }, [isEdit, id]);
+  }, [isEdit, id, articles]);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -199,7 +200,7 @@ export default function ArticleEditor() {
     const status: ArticleStatus = publishNow ? "PUBLISHED" : form.status;
 
     try {
-      const savedArticle = saveArticle({
+      const savedArticle = await saveArticle({
         id: isEdit && id ? Number(id) : undefined,
         title: form.title,
         slug: form.slug,

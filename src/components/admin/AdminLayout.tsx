@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Logo from "../Logo";
+import { setAuthToken } from "../../lib/api";
 
 interface NavItem {
   label: string;
@@ -43,7 +44,7 @@ function Sidebar({ collapsed, onCollapse }: { collapsed: boolean; onCollapse: ()
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("nexora_admin_token");
+    setAuthToken(null);
     navigate("/admin/login");
   };
 

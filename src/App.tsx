@@ -10,9 +10,10 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ArticleList from "./pages/admin/ArticleList";
 import ArticleEditor from "./pages/admin/ArticleEditor";
 import CategoryManager from "./pages/admin/CategoryManager";
+import { getAuthToken } from "./lib/api";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem("nexora_admin_token");
+  const token = getAuthToken();
   return token ? <>{children}</> : <Navigate to="/admin/login" replace />;
 }
 
