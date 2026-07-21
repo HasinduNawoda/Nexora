@@ -8,7 +8,7 @@
 // - Everything else is served as a static asset (the built React app),
 //   via the ASSETS binding configured in wrangler.jsonc.
 
-const BACKEND_ORIGIN = "http://141.148.23.179:8080";
+const BACKEND_ORIGIN = "http://141-148-23-179.nip.io:8080";
 
 export default {
   async fetch(request: Request, env: { ASSETS: Fetcher }): Promise<Response> {
