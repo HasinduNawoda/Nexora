@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nexora",
+  "compatibility_date": "2026-07-21",
+  "main": "worker.ts",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // Any path that isn't a real file (e.g. /admin/articles) falls back to
+    // index.html so React Router can handle client-side routes.
+    "not_found_handling": "single-page-application"
+  }
+}
