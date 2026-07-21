@@ -76,7 +76,7 @@ function toFrontend(b: BackendArticle): Article {
 let cache: Article[] = [];
 
 export async function fetchArticles(): Promise<Article[]> {
-  const raw = await api.get<BackendArticle[]>("/api/articles");
+  const raw = await api.get<BackendArticle[]>("/articles");
   cache = raw.map(toFrontend).sort((a, b) => b.id - a.id);
   notifyChange();
   return cache;
@@ -88,7 +88,7 @@ export function getArticles(): Article[] {
 
 export async function getArticleBySlug(slug: string): Promise<Article | undefined> {
   try {
-    const raw = await api.get<BackendArticle>(`/api/articles/${slug}`);
+    const raw = await api.get<BackendArticle>(`/articles/${slug}`);
     return toFrontend(raw);
   } catch {
     return undefined;
@@ -141,8 +141,8 @@ export async function saveArticle(input: ArticleInput): Promise<Article> {
   };
 
   const raw = input.id
-    ? await api.put<BackendArticle>(`/api/articles/${input.id}`, body)
-    : await api.post<BackendArticle>("/api/articles", body);
+    ? await api.put<BackendArticle>(`/articles/${input.id}`, body)
+    : await api.post<BackendArticle>("/articles", body);
 
   const result = toFrontend(raw);
   await fetchArticles();
@@ -150,6 +150,6 @@ export async function saveArticle(input: ArticleInput): Promise<Article> {
 }
 
 export async function deleteArticle(id: number): Promise<void> {
-  await api.delete(`/api/articles/${id}`);
+  await api.delete(`/articles/${id}`);
   await fetchArticles();
 }

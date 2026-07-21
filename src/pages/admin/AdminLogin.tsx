@@ -21,7 +21,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const { token } = await api.post<LoginResponse>("/api/auth/login", {
+      const { token } = await api.post<LoginResponse>("/auth/login", {
         username,
         password,
       });
