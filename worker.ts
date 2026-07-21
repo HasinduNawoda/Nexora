@@ -18,15 +18,33 @@ export default {
       const backendUrl = BACKEND_ORIGIN + url.pathname + url.search;
       const isBodyless = ["GET", "HEAD"].includes(request.method);
 
+      // Forward headers server-to-server, but drop the browser-context
+      // headers that leak the Worker's own origin into the request.
+      // Spring's CORS filter checks Origin on every request (not just
+      // preflight OPTIONS) and rejects anything not in its allow-list —
+      // since this hop is edge-to-backend, not browser-to-backend, the
+      // backend never needs to see it.
+      const forwardHeaders = new Headers(request.headers);
+      forwardHeaders.delete("origin");
+      forwardHeaders.delete("referer");
+
       const response = await fetch(backendUrl, {
         method: request.method,
-        headers: request.headers,
+        headers: forwardHeaders,
         body: isBodyless ? undefined : await request.arrayBuffer(),
       });
 
+      // Same idea in reverse: don't blindly relay the backend's raw
+      // response headers back to the browser (e.g. any CORS headers
+      // scoped to localhost, or hop-by-hop headers), since the browser
+      // is talking to our own HTTPS origin and doesn't need them.
+      const responseHeaders = new Headers(response.headers);
+      responseHeaders.delete("access-control-allow-origin");
+      responseHeaders.delete("access-control-allow-credentials");
+
       return new Response(response.body, {
         status: response.status,
-        headers: response.headers,
+        headers: responseHeaders,
       });
     }
 
