@@ -1,8 +1,7 @@
-import type { CategoryName } from "../types";
 import { CATEGORY_STYLES } from "../lib/categoryStyles";
 
 interface TagProps {
-  category: CategoryName;
+  category: string;
 }
 
 export default function Tag({ category }: TagProps) {
