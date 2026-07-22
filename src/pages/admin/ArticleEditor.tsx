@@ -4,6 +4,7 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import ArticleBody from "../../components/ArticleBody";
 import type { ArticleStatus, ContentBlock } from "../../types";
 import { saveArticle, useArticles } from "../../lib/store";
+import { api } from "../../lib/api";
 import { useCategories } from "../../lib/categories";
 import addNewBlockIcon from "../../assets/add-new-block.png";
 
@@ -104,6 +105,7 @@ const { articles } = useArticles();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load the existing article's content into the editor when editing.
@@ -137,11 +139,27 @@ const { articles } = useArticles();
     }));
   };
 
-  const handleFeaturedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFeaturedImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    set("imagePreview", url);
+
+    // Show an instant local preview while the real upload is in flight.
+    const objectUrl = URL.createObjectURL(file);
+    set("imagePreview", objectUrl);
+
+    setImageUploading(true);
+    setError(null);
+    try {
+      const { url } = await api.upload("/admin/upload", file);
+      // Swap the temporary blob: preview for the permanent, saveable URL.
+      set("imagePreview", url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Image upload failed.");
+      set("imagePreview", null);
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+      setImageUploading(false);
+    }
   };
 
   // --- Block editing helpers ---
@@ -244,14 +262,14 @@ const { articles } = useArticles();
           )}
           <button
             onClick={() => handleSave()}
-            disabled={saving}
+            disabled={saving || imageUploading}
             className="rounded-md border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-60"
           >
             Save draft
           </button>
           <button
             onClick={() => handleSave(true)}
-            disabled={saving || !form.title || !hasBody}
+            disabled={saving || imageUploading || !form.title || !hasBody}
             className="flex items-center gap-1.5 rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {saving && (
@@ -450,14 +468,14 @@ const { articles } = useArticles();
               <div className="mt-4 flex flex-col gap-2">
                 <button
                   onClick={() => handleSave(true)}
-                  disabled={saving || !form.title || !hasBody}
+                  disabled={saving || imageUploading || !form.title || !hasBody}
                   className="w-full rounded-md bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {saving ? "Saving…" : "Publish now"}
                 </button>
                 <button
                   onClick={() => handleSave()}
-                  disabled={saving}
+                  disabled={saving || imageUploading}
                   className="w-full rounded-md border border-zinc-300 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50 transition-colors disabled:opacity-60"
                 >
                   Save as draft
@@ -503,9 +521,15 @@ const { articles } = useArticles();
               {form.imagePreview ? (
                 <div className="relative">
                   <img src={form.imagePreview} alt="Preview" className="h-36 w-full rounded-lg object-cover" />
+                  {imageUploading && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40">
+                      <span className="font-mono text-xs text-white">Uploading…</span>
+                    </div>
+                  )}
                   <button
                     onClick={() => set("imagePreview", null)}
-                    className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                    disabled={imageUploading}
+                    className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-50"
                   >
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -33,6 +33,25 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return undefined as T;
 }
 
+async function upload(path: string, file: File): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const headers: Record<string, string> = {};
+  if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+  // Note: no Content-Type header here — the browser sets
+  // multipart/form-data with the correct boundary itself.
+
+  const res = await fetch(`${API_URL}${path}`, { method: "POST", body: formData, headers });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || `Upload failed: ${res.status}`);
+  }
+
+  return res.json();
+}
+
 export const api = {
   get: <T,>(path: string) => request<T>(path),
   post: <T,>(path: string, body?: unknown) =>
@@ -40,4 +59,5 @@ export const api = {
   put: <T,>(path: string, body?: unknown) =>
     request<T>(path, { method: "PUT", body: body ? JSON.stringify(body) : undefined }),
   delete: <T,>(path: string) => request<T>(path, { method: "DELETE" }),
+  upload,
 };

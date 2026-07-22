@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { Article, CategoryFilter } from "../types";
-import { getArticles, subscribe } from "../lib/store";
+import { fetchArticles, getArticles, subscribe } from "../lib/store";
 import Header from "../components/Header";
 import ArticleRow from "../components/ArticleRow";
 import Footer from "../components/Footer";
@@ -62,6 +62,7 @@ export default function Homepage() {
   useEffect(() => {
     const load = () => setAllArticles(getArticles().filter((a) => a.status === "PUBLISHED"));
     load();
+    fetchArticles();
     return subscribe(load);
   }, []);
 
