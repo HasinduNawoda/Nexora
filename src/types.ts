@@ -6,8 +6,6 @@
 // conflicting definition previously used only by the admin pages) has been
 // removed. Both "../types" and "../../types" imports now resolve here.
 
-export type CategoryName = "AI" | "Security" | "Dev" | "Hardware" | "Emerging";
-
 export type ArticleStatus = "DRAFT" | "PUBLISHED";
 
 // Rich content is modeled as an ordered list of typed blocks rather than a
@@ -80,20 +78,14 @@ export interface Article {
   metaDescription?: string;
 }
 
-export const CATEGORIES: readonly ("All" | CategoryName)[] = [
-  "All",
-  "AI",
-  "Security",
-  "Dev",
-  "Hardware",
-  "Emerging",
-];
-
-export type CategoryFilter = (typeof CATEGORIES)[number];
+// The list of categories shown in nav/filters is no longer fixed — it's
+// fetched live from the backend via useCategories() (see lib/categories.ts),
+// plus the two built-in pseudo-categories "All" and "Uncategorized".
+export type CategoryFilter = string;
 
 // Admin: category management. Deliberately typed with a plain `name: string`
-// rather than CategoryName — the whole point of the category manager is
-// letting an admin create categories beyond the fixed starter set.
+// rather than a fixed union — the whole point of the category manager is
+// letting an admin create categories beyond the original starter set.
 export interface CategoryItem {
   id: number;
   name: string;

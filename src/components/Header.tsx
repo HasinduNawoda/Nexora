@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import type { Article, CategoryFilter } from "../types";
-import { CATEGORIES } from "../types";
+import { useCategories } from "../lib/categories";
 import SearchBar from "./SearchBar";
 import Logo from "./Logo";
 
@@ -25,6 +25,8 @@ export default function Header({
   onLogoClick,
 }: HeaderProps) {
   const navigate = useNavigate();
+  const { categories } = useCategories();
+  const navTabs: CategoryFilter[] = ["All", ...categories.map((c) => c.name), "Uncategorized"];
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-[#F7F8FA]/90 backdrop-blur">
@@ -64,7 +66,7 @@ export default function Header({
         aria-label="Categories"
         className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 pb-3 sm:px-6"
       >
-        {CATEGORIES.map((cat) => (
+        {navTabs.map((cat) => (
           <button
             key={cat}
             type="button"

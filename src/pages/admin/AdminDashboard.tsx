@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { getArticles, deleteArticle, subscribe } from "../../lib/store";
+import { fetchArticles, getArticles, deleteArticle, subscribe } from "../../lib/store";
 
 const CATEGORY_DOT_MAP: Record<string, string> = {
   AI: "bg-indigo-500",
@@ -49,6 +49,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const load = () => setArticles(getArticles());
     load();
+    fetchArticles();
     return subscribe(load);
   }, []);
 
