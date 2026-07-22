@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
-import type { CategoryName } from "../../types";
 import { getArticles, deleteArticle, subscribe } from "../../lib/store";
 
-const CATEGORY_DOT: Record<CategoryName, string> = {
+const CATEGORY_DOT_MAP: Record<string, string> = {
   AI: "bg-indigo-500",
   Security: "bg-red-500",
   Dev: "bg-emerald-500",
   Hardware: "bg-amber-500",
   Emerging: "bg-sky-500",
 };
+const CATEGORY_DOT = new Proxy(CATEGORY_DOT_MAP, {
+  get: (target, prop: string) => target[prop] ?? "bg-zinc-400",
+});
 
 function StatCard({ label, value, delta, up }: { label: string; value: string; delta: string; up: boolean }) {
   return (

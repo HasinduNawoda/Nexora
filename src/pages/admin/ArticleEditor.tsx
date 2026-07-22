@@ -2,11 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import ArticleBody from "../../components/ArticleBody";
-import type { CategoryName, ArticleStatus, ContentBlock } from "../../types";
+import type { ArticleStatus, ContentBlock } from "../../types";
 import { saveArticle, useArticles } from "../../lib/store";
+import { useCategories } from "../../lib/categories";
 import addNewBlockIcon from "../../assets/add-new-block.png";
-
-const CATEGORIES: CategoryName[] = ["AI", "Security", "Dev", "Hardware", "Emerging"];
 
 function slugify(text: string) {
   return text
@@ -70,7 +69,7 @@ interface FormState {
   title: string;
   slug: string;
   slugEdited: boolean;
-  category: CategoryName;
+  categoryId: number | undefined;
   excerpt: string;
   blocks: ContentBlock[];
   author: string;
@@ -84,7 +83,7 @@ const INITIAL: FormState = {
   title: "",
   slug: "",
   slugEdited: false,
-  category: "AI",
+  categoryId: undefined,
   excerpt: "",
   blocks: [{ id: crypto.randomUUID(), type: "paragraph", text: "" }],
   author: "",
@@ -100,6 +99,7 @@ export default function ArticleEditor() {
   const navigate = useNavigate();
 
 const { articles } = useArticles();
+  const { categories } = useCategories();
   const [form, setForm] = useState<FormState>(INITIAL);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -115,7 +115,7 @@ const { articles } = useArticles();
       title: existing.title,
       slug: existing.slug || "",
       slugEdited: true,
-      category: existing.category,
+      categoryId: existing.categoryId,
       excerpt: existing.excerpt,
       blocks: existing.content.length ? existing.content : [{ id: crypto.randomUUID(), type: "paragraph", text: "" }],
       author: existing.author || "",
@@ -204,7 +204,7 @@ const { articles } = useArticles();
         id: isEdit && id ? Number(id) : undefined,
         title: form.title,
         slug: form.slug,
-        category: form.category,
+        categoryId: form.categoryId,
         excerpt: form.excerpt,
         content: form.blocks,
         author: form.author,
@@ -468,21 +468,32 @@ const { articles } = useArticles();
             {/* Category */}
             <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
               <h3 className="mb-3 font-display text-sm font-semibold text-zinc-900">Category</h3>
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => set("category", cat)}
-                    className={`rounded-full px-3 py-1 font-mono text-xs font-medium transition-colors ring-1 ${
-                      form.category === cat
-                        ? "bg-indigo-600 text-white ring-indigo-600"
-                        : "bg-white text-zinc-500 ring-zinc-200 hover:ring-zinc-400"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+              {categories.length === 0 ? (
+                <p className="font-mono text-xs text-zinc-400">
+                  No categories yet — create one in{" "}
+                  <a href="/admin/categories" className="text-indigo-600 underline">
+                    Categories
+                  </a>
+                  .
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => set("categoryId", cat.id)}
+                      className={`rounded-full px-3 py-1 font-mono text-xs font-medium transition-colors ring-1 ${
+                        form.categoryId === cat.id
+                          ? "bg-indigo-600 text-white ring-indigo-600"
+                          : "bg-white text-zinc-500 ring-zinc-200 hover:ring-zinc-400"
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Featured image */}

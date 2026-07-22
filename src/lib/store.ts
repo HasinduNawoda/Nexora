@@ -54,7 +54,8 @@ function toFrontend(b: BackendArticle): Article {
   return {
     id: b.id,
     index: String(b.id).padStart(2, "0"),
-    category: (b.category?.name ?? "AI") as Article["category"],
+    category: b.category?.name ?? "Uncategorized",
+    categoryId: b.category?.id,
     title: b.title,
     slug: b.slug,
     excerpt: b.excerpt,
@@ -116,7 +117,7 @@ export interface ArticleInput {
   id?: number;
   title: string;
   slug?: string;
-  category: Article["category"];
+  categoryId?: number;
   excerpt: string;
   content: ContentBlock[];
   author?: string;
@@ -138,6 +139,10 @@ export async function saveArticle(input: ArticleInput): Promise<Article> {
     metaDescription: input.metaDescription,
     imagePath: input.imagePath,
     date: new Date().toISOString().split("T")[0],
+    // The backend links articles to categories by id (Article.category is a
+    // @ManyToOne to Category). This was previously omitted entirely, which
+    // is why category selections never saved.
+    category: input.categoryId ? { id: input.categoryId } : null,
   };
 
   const raw = input.id
