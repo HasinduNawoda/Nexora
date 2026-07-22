@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { Article, CategoryFilter } from "../types";
-import { CATEGORIES } from "../types";
 import { getArticles, subscribe } from "../lib/store";
 import Header from "../components/Header";
 import ArticleRow from "../components/ArticleRow";
 import Footer from "../components/Footer";
-
-function isValidCategory(value: string | null): value is CategoryFilter {
-  return value !== null && (CATEGORIES as readonly string[]).includes(value);
-}
 
 export default function Homepage() {
   const navigate = useNavigate();
@@ -17,19 +12,21 @@ export default function Homepage() {
 
   // Category state is seeded from the URL (e.g. footer links to
   // /?category=AI) and kept in sync as the reader clicks around, so the
-  // current filter is always shareable/bookmarkable.
-  const [activeCategory, setActiveCategoryState] = useState<CategoryFilter>(() => {
-    const fromUrl = searchParams.get("category");
-    return isValidCategory(fromUrl) ? fromUrl : "All";
-  });
+  // current filter is always shareable/bookmarkable. The category list
+  // itself is dynamic now (fetched live in Header/Footer), so there's no
+  // fixed set to validate the URL value against — any string is accepted,
+  // and simply won't match anything if it doesn't correspond to a real
+  // category.
+  const [activeCategory, setActiveCategoryState] = useState<CategoryFilter>(
+    () => searchParams.get("category") ?? "All"
+  );
 
   // The useState initializer above only runs on first mount. Clicking a
   // footer/header category link while already on Homepage updates the URL
   // but does NOT remount this component, so without this effect
   // activeCategory would silently go stale and ignore the new URL.
   useEffect(() => {
-    const fromUrl = searchParams.get("category");
-    const next = isValidCategory(fromUrl) ? fromUrl : "All";
+    const next = searchParams.get("category") ?? "All";
     setActiveCategoryState((current) => (current === next ? current : next));
   }, [searchParams]);
 
@@ -71,7 +68,11 @@ export default function Homepage() {
   const filtered = useMemo(
     () =>
       allArticles.filter((a) => {
-        const matchesCategory = activeCategory === "All" || a.category === activeCategory;
+        const matchesCategory =
+          activeCategory === "All" ||
+          (activeCategory === "Uncategorized"
+            ? !a.categoryId
+            : a.category === activeCategory);
         const matchesQuery = a.title.toLowerCase().includes(query.trim().toLowerCase());
         return matchesCategory && matchesQuery;
       }),

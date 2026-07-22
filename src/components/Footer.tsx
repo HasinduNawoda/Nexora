@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { CATEGORIES } from "../types";
+import { useCategories } from "../lib/categories";
 import { SITE, SOCIAL_LINKS, CONTACT_LINKS } from "../lib/siteConfig";
 import Logo from "./Logo";
 
@@ -46,10 +46,10 @@ const SOCIALS = [
   { key: "youtube", label: "YouTube", url: SOCIAL_LINKS.youtube, Icon: YouTubeIcon },
 ].filter((s) => s.url.trim() !== "");
 
-const CATEGORY_LINKS = CATEGORIES.filter((c) => c !== "All");
-
 export default function Footer() {
   const year = new Date().getFullYear();
+  const { categories } = useCategories();
+  const categoryLinks = [...categories.map((c) => c.name), "Uncategorized"];
 
   return (
     <footer className="border-t border-slate-800 bg-[#0B0F1A] text-slate-300">
@@ -88,7 +88,7 @@ export default function Footer() {
               Categories
             </h3>
             <ul className="space-y-2.5">
-              {CATEGORY_LINKS.map((cat) => (
+              {categoryLinks.map((cat) => (
                 <li key={cat}>
                   <Link
                     to={`/?category=${cat}`}
