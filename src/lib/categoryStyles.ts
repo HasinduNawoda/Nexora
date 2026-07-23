@@ -28,3 +28,13 @@ export const CATEGORY_GRADIENT = new Proxy(GRADIENT_MAP, {
 export const CATEGORY_STYLES = new Proxy(STYLE_MAP, {
   get: (target, prop: string) => target[prop] ?? DEFAULT_STYLE,
 });
+
+/** First category name, for single-color affordances (cover gradient, dot indicator). Falls back to "Uncategorized". */
+export function primaryCategory(categories: string[]): string {
+  return categories[0] ?? "Uncategorized";
+}
+
+/** Names to render as tags — "Uncategorized" as a single pseudo-tag when the list is empty. */
+export function displayCategories(categories: string[]): string[] {
+  return categories.length ? categories : ["Uncategorized"];
+}

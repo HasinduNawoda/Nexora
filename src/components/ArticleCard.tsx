@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Article } from "../types";
 import Tag from "./Tag";
-import { CATEGORY_GRADIENT } from "../lib/categoryStyles";
+import { CATEGORY_GRADIENT, primaryCategory, displayCategories } from "../lib/categoryStyles";
 
 interface ArticleCardProps {
   article: Article;
@@ -26,7 +26,7 @@ export default function ArticleCard({ article, eyebrow, showChevron = true }: Ar
     >
       <div className="flex flex-col md:flex-row">
         <div
-          className={`flex h-48 items-center justify-center bg-gradient-to-br bg-cover bg-center md:h-auto md:w-2/5 ${CATEGORY_GRADIENT[article.category]}`}
+          className={`flex h-48 items-center justify-center bg-gradient-to-br bg-cover bg-center md:h-auto md:w-2/5 ${CATEGORY_GRADIENT[primaryCategory(article.categories)]}`}
           style={article.imagePath ? { backgroundImage: `url(${article.imagePath})` } : undefined}
         >
           {!article.imagePath && (
@@ -36,8 +36,10 @@ export default function ArticleCard({ article, eyebrow, showChevron = true }: Ar
           )}
         </div>
         <div className="flex flex-1 flex-col justify-center p-6 sm:p-8">
-          <div className="mb-3 flex items-center gap-2">
-            <Tag category={article.category} />
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            {displayCategories(article.categories).map((name) => (
+              <Tag key={name} category={name} />
+            ))}
             {eyebrow && (
               <span className="font-mono text-[11px] uppercase tracking-wide text-[#FF6B35]">
                 {eyebrow}

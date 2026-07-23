@@ -72,8 +72,8 @@ export default function Homepage() {
         const matchesCategory =
           activeCategory === "All" ||
           (activeCategory === "Uncategorized"
-            ? !a.categoryId
-            : a.category === activeCategory);
+            ? a.categoryIds.length === 0
+            : a.categories.includes(activeCategory));
         const matchesQuery = a.title.toLowerCase().includes(query.trim().toLowerCase());
         return matchesCategory && matchesQuery;
       }),

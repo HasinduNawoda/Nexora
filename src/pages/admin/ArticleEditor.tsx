@@ -70,7 +70,7 @@ interface FormState {
   title: string;
   slug: string;
   slugEdited: boolean;
-  categoryId: number | undefined;
+  categoryIds: number[];
   excerpt: string;
   blocks: ContentBlock[];
   author: string;
@@ -84,7 +84,7 @@ const INITIAL: FormState = {
   title: "",
   slug: "",
   slugEdited: false,
-  categoryId: undefined,
+  categoryIds: [],
   excerpt: "",
   blocks: [{ id: crypto.randomUUID(), type: "paragraph", text: "" }],
   author: "",
@@ -117,7 +117,7 @@ const { articles } = useArticles();
       title: existing.title,
       slug: existing.slug || "",
       slugEdited: true,
-      categoryId: existing.categoryId,
+      categoryIds: existing.categoryIds,
       excerpt: existing.excerpt,
       blocks: existing.content.length ? existing.content : [{ id: crypto.randomUUID(), type: "paragraph", text: "" }],
       author: existing.author || "",
@@ -222,7 +222,7 @@ const { articles } = useArticles();
         id: isEdit && id ? Number(id) : undefined,
         title: form.title,
         slug: form.slug,
-        categoryId: form.categoryId,
+        categoryIds: form.categoryIds,
         excerpt: form.excerpt,
         content: form.blocks,
         author: form.author,
@@ -486,6 +486,9 @@ const { articles } = useArticles();
             {/* Category */}
             <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
               <h3 className="mb-3 font-display text-sm font-semibold text-zinc-900">Category</h3>
+              <p className="mb-3 font-mono text-[11px] text-zinc-400">
+                Select as many as apply. Click a selected category again to remove it.
+              </p>
               {categories.length === 0 ? (
                 <p className="font-mono text-xs text-zinc-400">
                   No categories yet — create one in{" "}
@@ -496,20 +499,31 @@ const { articles } = useArticles();
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => set("categoryId", cat.id)}
-                      className={`rounded-full px-3 py-1 font-mono text-xs font-medium transition-colors ring-1 ${
-                        form.categoryId === cat.id
-                          ? "bg-indigo-600 text-white ring-indigo-600"
-                          : "bg-white text-zinc-500 ring-zinc-200 hover:ring-zinc-400"
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  ))}
+                  {categories.map((cat) => {
+                    const isSelected = form.categoryIds.includes(cat.id);
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        aria-pressed={isSelected}
+                        onClick={() =>
+                          setForm((f) => ({
+                            ...f,
+                            categoryIds: isSelected
+                              ? f.categoryIds.filter((id) => id !== cat.id)
+                              : [...f.categoryIds, cat.id],
+                          }))
+                        }
+                        className={`rounded-full px-3 py-1 font-mono text-xs font-medium transition-colors ring-1 ${
+                          isSelected
+                            ? "bg-indigo-600 text-white ring-indigo-600"
+                            : "bg-white text-zinc-500 ring-zinc-200 hover:ring-zinc-400"
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

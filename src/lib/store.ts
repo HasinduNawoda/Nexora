@@ -28,7 +28,7 @@ interface BackendArticle {
   imagePath: string | null;
   metaTitle: string | null;
   metaDescription: string | null;
-  category: { id: number; name: string } | null;
+  categories: { id: number; name: string }[];
 }
 
 function formatViews(n: number): string {
@@ -54,8 +54,8 @@ function toFrontend(b: BackendArticle): Article {
   return {
     id: b.id,
     index: String(b.id).padStart(2, "0"),
-    category: b.category?.name ?? "Uncategorized",
-    categoryId: b.category?.id,
+    categories: b.categories?.map((c) => c.name) ?? [],
+    categoryIds: b.categories?.map((c) => c.id) ?? [],
     title: b.title,
     slug: b.slug,
     excerpt: b.excerpt,
@@ -117,7 +117,7 @@ export interface ArticleInput {
   id?: number;
   title: string;
   slug?: string;
-  categoryId?: number;
+  categoryIds: number[];
   excerpt: string;
   content: ContentBlock[];
   author?: string;
@@ -139,10 +139,10 @@ export async function saveArticle(input: ArticleInput): Promise<Article> {
     metaDescription: input.metaDescription,
     imagePath: input.imagePath,
     date: new Date().toISOString().split("T")[0],
-    // The backend links articles to categories by id (Article.category is a
-    // @ManyToOne to Category). This was previously omitted entirely, which
-    // is why category selections never saved.
-    category: input.categoryId ? { id: input.categoryId } : null,
+    // The backend links articles to categories by id (Article.categories is
+    // a @ManyToMany to Category). Sending {id} placeholders is enough — the
+    // backend re-resolves the real entities from these ids.
+    categories: input.categoryIds.map((id) => ({ id })),
   };
 
   const raw = input.id
