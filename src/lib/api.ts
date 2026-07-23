@@ -21,6 +21,17 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
 
+  if (res.status === 401 || res.status === 403) {
+    // Session expired or invalid — clear the stale token and send the
+    // admin back to login instead of letting every write fail silently.
+    const hadToken = !!authToken;
+    setAuthToken(null);
+    if (hadToken && !window.location.pathname.startsWith("/admin/login")) {
+      window.location.href = "/admin/login";
+    }
+    throw new Error("Your session has expired. Please log in again.");
+  }
+
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(text || `Request failed: ${res.status}`);
@@ -43,6 +54,15 @@ async function upload(path: string, file: File): Promise<{ url: string }> {
   // multipart/form-data with the correct boundary itself.
 
   const res = await fetch(`${API_URL}${path}`, { method: "POST", body: formData, headers });
+
+  if (res.status === 401 || res.status === 403) {
+    const hadToken = !!authToken;
+    setAuthToken(null);
+    if (hadToken && !window.location.pathname.startsWith("/admin/login")) {
+      window.location.href = "/admin/login";
+    }
+    throw new Error("Your session has expired. Please log in again.");
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
