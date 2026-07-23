@@ -22,14 +22,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
 
   if (res.status === 401 || res.status === 403) {
-    // Session expired or invalid — clear the stale token and send the
-    // admin back to login instead of letting every write fail silently.
-    const hadToken = !!authToken;
+    // Clear a token that the server just rejected, but don't force-navigate —
+    // that caused a login loop when the real problem was something other
+    // than a simple expired token. Let the caller show the error; the next
+    // normal navigation will already respect ProtectedRoute if there's truly
+    // no valid token.
     setAuthToken(null);
-    if (hadToken && !window.location.pathname.startsWith("/admin/login")) {
-      window.location.href = "/admin/login";
-    }
-    throw new Error("Your session has expired. Please log in again.");
+    const text = await res.text().catch(() => "");
+    throw new Error(text || "Not authorized. Please log in again.");
   }
 
   if (!res.ok) {
@@ -56,12 +56,9 @@ async function upload(path: string, file: File): Promise<{ url: string }> {
   const res = await fetch(`${API_URL}${path}`, { method: "POST", body: formData, headers });
 
   if (res.status === 401 || res.status === 403) {
-    const hadToken = !!authToken;
     setAuthToken(null);
-    if (hadToken && !window.location.pathname.startsWith("/admin/login")) {
-      window.location.href = "/admin/login";
-    }
-    throw new Error("Your session has expired. Please log in again.");
+    const text = await res.text().catch(() => "");
+    throw new Error(text || "Not authorized. Please log in again.");
   }
 
   if (!res.ok) {
