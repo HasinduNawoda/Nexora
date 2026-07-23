@@ -6,7 +6,8 @@ export const ARTICLES: Article[] = [
   {
     id: 1,
     index: "01",
-    category: "AI",
+    categories: ["AI"],
+    categoryIds: [],
     title: "Inside the architecture choices behind the next wave of small language models",
     excerpt:
       "Why teams are trading raw parameter count for retrieval, tool use, and tighter context — and what that means for anyone shipping AI features in 2026.",
@@ -24,7 +25,8 @@ export const ARTICLES: Article[] = [
   {
     id: 2,
     index: "02",
-    category: "Security",
+    categories: ["Security"],
+    categoryIds: [],
     title: "A new class of supply-chain attack is hiding inside CI/CD caching layers",
     excerpt:
       "Researchers disclose a technique that poisons build caches rather than packages themselves, evading most existing dependency-scanning tools.",
@@ -41,7 +43,8 @@ export const ARTICLES: Article[] = [
   {
     id: 3,
     index: "03",
-    category: "Dev",
+    categories: ["Dev"],
+    categoryIds: [],
     title: "Spring Boot 4 quietly changed how it handles virtual threads — here's what breaks",
     excerpt:
       "A practical migration guide for teams moving high-throughput services onto the new default executor model.",
@@ -58,7 +61,8 @@ export const ARTICLES: Article[] = [
   {
     id: 4,
     index: "04",
-    category: "Hardware",
+    categories: ["Hardware"],
+    categoryIds: [],
     title: "On-device inference chips are getting cheap enough to matter for indie developers",
     excerpt:
       "A look at the new generation of sub-$50 NPUs and what they unlock for offline-first mobile apps.",
@@ -75,7 +79,8 @@ export const ARTICLES: Article[] = [
   {
     id: 5,
     index: "05",
-    category: "Emerging",
+    categories: ["Emerging"],
+    categoryIds: [],
     title: "What 'agentic' actually means once you strip the marketing away",
     excerpt:
       "A grounded technical breakdown of planning, memory, and tool-calling loops — and where today's agents still fall over.",
@@ -92,7 +97,8 @@ export const ARTICLES: Article[] = [
   {
     id: 6,
     index: "06",
-    category: "Dev",
+    categories: ["Dev"],
+    categoryIds: [],
     title: "Why typed APIs are winning the argument against REST-by-convention",
     excerpt:
       "A look at how contract-first tooling is changing the default starting point for new backend services.",
@@ -109,7 +115,8 @@ export const ARTICLES: Article[] = [
   {
     id: 7,
     index: "07",
-    category: "Security",
+    categories: ["Security"],
+    categoryIds: [],
     title: "Passkeys cleared their last major adoption hurdle this quarter",
     excerpt:
       "Cross-device sync finally works reliably across major platforms — here's what that unlocks for teams still on passwords.",
@@ -126,7 +133,8 @@ export const ARTICLES: Article[] = [
   {
     id: 8,
     index: "08",
-    category: "AI",
+    categories: ["AI"],
+    categoryIds: [],
     title: "Benchmark fatigue is real, and labs are starting to admit it",
     excerpt:
       "As leaderboard scores converge, researchers are leaning harder on task-specific evals that are far harder to game.",
