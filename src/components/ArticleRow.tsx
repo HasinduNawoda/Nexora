@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Article } from "../types";
 import Tag from "./Tag";
-import { CATEGORY_GRADIENT } from "../lib/categoryStyles";
+import { CATEGORY_GRADIENT, primaryCategory, displayCategories } from "../lib/categoryStyles";
 
 interface ArticleRowProps {
   article: Article;
@@ -45,7 +45,7 @@ export default function ArticleRow({ article, isHovered, onHover, eyebrow }: Art
 
         <div
           aria-hidden="true"
-          className={`hidden h-16 w-24 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br bg-cover bg-center sm:flex ${CATEGORY_GRADIENT[article.category]}`}
+          className={`hidden h-16 w-24 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br bg-cover bg-center sm:flex ${CATEGORY_GRADIENT[primaryCategory(article.categories)]}`}
           style={article.imagePath ? { backgroundImage: `url(${article.imagePath})` } : undefined}
         >
           {!article.imagePath && (
@@ -57,7 +57,12 @@ export default function ArticleRow({ article, isHovered, onHover, eyebrow }: Art
 
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex items-center gap-2">
-            <Tag category={article.category} />
+            <Tag category={primaryCategory(article.categories)} />
+            {displayCategories(article.categories).length > 1 && (
+              <span className="font-mono text-[11px] text-slate-400">
+                +{displayCategories(article.categories).length - 1}
+              </span>
+            )}
             {eyebrow && (
               <span className="font-mono text-[11px] uppercase tracking-wide text-[#FF6B35]">
                 {eyebrow}

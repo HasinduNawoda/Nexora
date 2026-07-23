@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { Article, CategoryFilter } from "../types";
 import { getArticleBySlug, useArticles } from "../lib/store";
-import { CATEGORY_GRADIENT } from "../lib/categoryStyles";
+import { CATEGORY_GRADIENT, primaryCategory, displayCategories } from "../lib/categoryStyles";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Tag from "../components/Tag";
@@ -108,7 +108,7 @@ export default function ArticlePage() {
         </Link>
 
         <div
-          className={`mb-8 flex h-56 items-center justify-center rounded-lg bg-gradient-to-br bg-cover bg-center sm:h-72 ${CATEGORY_GRADIENT[article.category]}`}
+          className={`mb-8 flex h-56 items-center justify-center rounded-lg bg-gradient-to-br bg-cover bg-center sm:h-72 ${CATEGORY_GRADIENT[primaryCategory(article.categories)]}`}
           style={article.imagePath ? { backgroundImage: `url(${article.imagePath})` } : undefined}
         >
           {!article.imagePath && (
@@ -118,8 +118,10 @@ export default function ArticlePage() {
           )}
         </div>
 
-        <div className="mb-3 flex items-center gap-2">
-          <Tag category={article.category} />
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          {displayCategories(article.categories).map((name) => (
+            <Tag key={name} category={name} />
+          ))}
         </div>
 
         <h1 className="mb-4 font-display text-3xl font-bold leading-tight text-[#0B0F1A] sm:text-4xl">

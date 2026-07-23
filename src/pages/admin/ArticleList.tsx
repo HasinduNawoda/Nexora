@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { fetchArticles, getArticles, deleteArticle, subscribe } from "../../lib/store";
+import { primaryCategory, displayCategories } from "../../lib/categoryStyles";
 
 const CATEGORY_DOT_MAP: Record<string, string> = {
   AI: "bg-indigo-500",
@@ -119,8 +120,10 @@ export default function ArticleList() {
                     </td>
                     <td className="hidden px-4 py-4 sm:table-cell">
                       <div className="flex items-center gap-1.5">
-                        <span className={`h-1.5 w-1.5 rounded-full ${CATEGORY_DOT[article.category]}`} />
-                        <span className="font-mono text-xs text-zinc-500">{article.category}</span>
+                        <span className={`h-1.5 w-1.5 rounded-full ${CATEGORY_DOT[primaryCategory(article.categories)]}`} />
+                        <span className="font-mono text-xs text-zinc-500">
+                          {displayCategories(article.categories).join(", ")}
+                        </span>
                       </div>
                     </td>
                     <td className="hidden px-4 py-4 md:table-cell">

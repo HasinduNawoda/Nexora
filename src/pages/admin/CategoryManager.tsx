@@ -23,7 +23,7 @@ export default function CategoryManager() {
   const [error, setError] = useState<string | null>(null);
 
   const articleCount = (categoryId: number) =>
-    articles.filter((a) => a.categoryId === categoryId).length;
+    articles.filter((a) => a.categoryIds.includes(categoryId)).length;
 
   const handleAdd = async () => {
     const trimmed = newName.trim();

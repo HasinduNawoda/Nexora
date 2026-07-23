@@ -56,10 +56,10 @@ export interface Article {
   id: number;
   /** Zero-padded display index, e.g. "01". Cosmetic only — not a DB field. */
   index: string;
-  /** Display name of the article's category. Any admin-created category name is valid here, not just the 5 starter ones. */
-  category: string;
-  /** Backend Category.id — needed when saving, since the API links articles to categories by id, not by name. */
-  categoryId?: number;
+  /** Display names of the article's categories. Any admin-created category name is valid here, not just the 5 starter ones. Empty array = Uncategorized. */
+  categories: string[];
+  /** Backend Category.id list — needed when saving, since the API links articles to categories by id, not by name. */
+  categoryIds: number[];
   title: string;
   /** URL slug, e.g. "gpt-5-6-explained" → /articles/gpt-5-6-explained */
   slug?: string;

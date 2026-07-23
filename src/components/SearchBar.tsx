@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Article } from "../types";
 import Tag from "./Tag";
+import { primaryCategory } from "../lib/categoryStyles";
 import searchIcon from "../assets/search.png";
 
 interface SearchBarProps {
@@ -205,7 +206,7 @@ export default function SearchBar({
                 i === activeIndex ? "bg-slate-50" : "hover:bg-slate-50"
               }`}
             >
-              <Tag category={article.category} />
+              <Tag category={primaryCategory(article.categories)} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium text-[#0B0F1A]">
                   <HighlightedText text={article.title} query={query} />
