@@ -21,17 +21,6 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
 
-  if (res.status === 401 || res.status === 403) {
-    // Clear a token that the server just rejected, but don't force-navigate —
-    // that caused a login loop when the real problem was something other
-    // than a simple expired token. Let the caller show the error; the next
-    // normal navigation will already respect ProtectedRoute if there's truly
-    // no valid token.
-    setAuthToken(null);
-    const text = await res.text().catch(() => "");
-    throw new Error(text || "Not authorized. Please log in again.");
-  }
-
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(text || `Request failed: ${res.status}`);
@@ -54,12 +43,6 @@ async function upload(path: string, file: File): Promise<{ url: string }> {
   // multipart/form-data with the correct boundary itself.
 
   const res = await fetch(`${API_URL}${path}`, { method: "POST", body: formData, headers });
-
-  if (res.status === 401 || res.status === 403) {
-    setAuthToken(null);
-    const text = await res.text().catch(() => "");
-    throw new Error(text || "Not authorized. Please log in again.");
-  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
