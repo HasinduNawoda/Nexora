@@ -6,6 +6,10 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
+    // Run the Worker's fetch() for every request first, so custom routes
+    // like /sitemap.xml and /robots.txt are handled before Cloudflare's
+    // asset system falls back to serving index.html.
+    "run_worker_first": true,
     // Any path that isn't a real file (e.g. /admin/articles) falls back to
     // index.html so React Router can handle client-side routes.
     "not_found_handling": "single-page-application"
