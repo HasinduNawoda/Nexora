@@ -10,9 +10,72 @@
 
 const BACKEND_ORIGIN = "http://141-148-23-179.nip.io:8080";
 
+// Update this if the site is ever moved to a different domain.
+const SITE_ORIGIN = "https://nexora.hasindunawoda78.workers.dev";
+
+interface BackendArticle {
+  slug: string;
+  status: "DRAFT" | "PUBLISHED";
+  date: string; // ISO date
+}
+
+function xmlEscape(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+async function buildSitemap(): Promise<string> {
+  const staticUrls = ["", "about", "privacy", "terms"];
+
+  let articleUrls: string[] = [];
+  try {
+    const res = await fetch(`${BACKEND_ORIGIN}/api/articles`);
+    if (res.ok) {
+      const articles: BackendArticle[] = await res.json();
+      articleUrls = articles
+        .filter((a) => a.status === "PUBLISHED")
+        .map((a) => `articles/${a.slug}`);
+    }
+  } catch {
+    // If the backend is briefly unreachable, still serve a sitemap with
+    // the static pages rather than failing the whole request.
+  }
+
+  const allPaths = [...staticUrls, ...articleUrls];
+  const urlEntries = allPaths
+    .map((path) => `  <url><loc>${xmlEscape(`${SITE_ORIGIN}/${path}`)}</loc></url>`)
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries}\n</urlset>\n`;
+}
+
+const ROBOTS_TXT = `User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: ${SITE_ORIGIN}/sitemap.xml
+`;
+
 export default {
   async fetch(request: Request, env: { ASSETS: Fetcher }): Promise<Response> {
     const url = new URL(request.url);
+
+    if (url.pathname === "/robots.txt") {
+      return new Response(ROBOTS_TXT, {
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      });
+    }
+
+    if (url.pathname === "/sitemap.xml") {
+      const sitemap = await buildSitemap();
+      return new Response(sitemap, {
+        headers: { "content-type": "application/xml; charset=utf-8" },
+      });
+    }
 
     if (url.pathname.startsWith("/api/")) {
       const backendUrl = BACKEND_ORIGIN + url.pathname + url.search;
