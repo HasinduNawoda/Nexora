@@ -53,7 +53,7 @@ function toFrontend(b: BackendArticle): Article {
   }
   return {
     id: b.id,
-    index: String(b.id).padStart(2, "0"),
+    index: "", // filled in after sorting in fetchArticles/getArticleBySlug
     categories: b.categories?.map((c) => c.name) ?? [],
     categoryIds: b.categories?.map((c) => c.id) ?? [],
     title: b.title,
@@ -76,9 +76,14 @@ function toFrontend(b: BackendArticle): Article {
 
 let cache: Article[] = [];
 
+function withSequentialIndices(list: Article[]): Article[] {
+  return list.map((a, i) => ({ ...a, index: String(i + 1).padStart(2, "0") }));
+}
+
 export async function fetchArticles(): Promise<Article[]> {
   const raw = await api.get<BackendArticle[]>("/articles");
-  cache = raw.map(toFrontend).sort((a, b) => b.id - a.id);
+  const sorted = raw.map(toFrontend).sort((a, b) => b.id - a.id);
+  cache = withSequentialIndices(sorted);
   notifyChange();
   return cache;
 }
@@ -90,7 +95,12 @@ export function getArticles(): Article[] {
 export async function getArticleBySlug(slug: string): Promise<Article | undefined> {
   try {
     const raw = await api.get<BackendArticle>(`/articles/${slug}`);
-    return toFrontend(raw);
+    const article = toFrontend(raw);
+    // Reuse the index already assigned in the cached list (if present) so a
+    // single-article fetch shows the same number as it does in listings,
+    // rather than a blank/DB-id-based one.
+    const cached = cache.find((a) => a.id === article.id);
+    return cached ? { ...article, index: cached.index } : article;
   } catch {
     return undefined;
   }
