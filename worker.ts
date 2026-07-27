@@ -66,14 +66,20 @@ export default {
 
     if (url.pathname === "/robots.txt") {
       return new Response(ROBOTS_TXT, {
-        headers: { "content-type": "text/plain; charset=utf-8" },
+        headers: {
+          "content-type": "text/plain; charset=utf-8",
+          "cache-control": "no-store",
+        },
       });
     }
 
     if (url.pathname === "/sitemap.xml") {
       const sitemap = await buildSitemap();
       return new Response(sitemap, {
-        headers: { "content-type": "application/xml; charset=utf-8" },
+        headers: {
+          "content-type": "application/xml; charset=utf-8",
+          "cache-control": "no-store",
+        },
       });
     }
 
