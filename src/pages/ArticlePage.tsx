@@ -7,6 +7,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Tag from "../components/Tag";
 import ArticleBody from "../components/ArticleBody";
+import loadingGif from "../assets/loading.gif";
 
 export default function ArticlePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -33,8 +34,12 @@ export default function ArticlePage() {
   }, [slug]);
 
   useEffect(() => {
+    if (loading) {
+      document.title = "Loading… — Nexora";
+      return;
+    }
     document.title = article ? `${article.metaTitle || article.title} — Nexora` : "Article not found — Nexora";
-  }, [article]);
+  }, [article, loading]);
 
   const [query, setQuery] = useState("");
 
@@ -48,8 +53,9 @@ export default function ArticlePage() {
   };
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
-        <p className="font-mono text-sm text-slate-400">Loading...</p>
+      <div data-state="loading" className="min-h-screen bg-[#F7F8FA] flex flex-col items-center justify-center">
+        <img src={loadingGif} alt="Loading" className="h-16 w-16" />
+        <p className="mt-3 font-mono text-sm text-slate-400">Loading...</p>
       </div>
     );
   }
@@ -65,7 +71,7 @@ export default function ArticlePage() {
           articles={allArticles}
           onSelectArticle={handleSelectFromSearch}
         />
-        <main className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
+        <main data-state="not-found" className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
           <p className="font-mono text-xs uppercase tracking-widest text-slate-400">404</p>
           <h1 className="mt-2 font-display text-2xl font-bold text-[#0B0F1A]">
             We couldn't find that article.

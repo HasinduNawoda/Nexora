@@ -5,6 +5,8 @@ import { fetchArticles, getArticles, subscribe } from "../lib/store";
 import Header from "../components/Header";
 import ArticleRow from "../components/ArticleRow";
 import Footer from "../components/Footer";
+import loadingGif from "../assets/loading.gif";
+import emptyStateGif from "../assets/empty-state.gif";
 
 export default function Homepage() {
   const navigate = useNavigate();
@@ -58,11 +60,29 @@ export default function Homepage() {
   // Live-loaded from the shared store (localStorage-backed today, a real
   // API once the backend exists) so anything published in the admin editor
   // shows up here without hardcoding it in a second place.
+  //
+  // isLoading starts true only when the cache is genuinely empty (first
+  // ever load in this browser session) — if we're navigating back here
+  // after the cache is already warm, there's no fetch to wait on, so we
+  // skip straight to the real content instead of flashing a loading state.
   const [allArticles, setAllArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(() => getArticles().length === 0);
   useEffect(() => {
-    const load = () => setAllArticles(getArticles().filter((a) => a.status === "PUBLISHED"));
-    load();
-    fetchArticles();
+    const load = () => {
+      setAllArticles(getArticles().filter((a) => a.status === "PUBLISHED"));
+    };
+    // If the cache already has data (e.g. we're navigating back here from
+    // an article page within the same session), show it immediately with
+    // no loading flash — there's nothing to wait on.
+    if (getArticles().length > 0) {
+      load();
+      setIsLoading(false);
+    }
+    // Otherwise this is the genuine first load: keep isLoading true until
+    // the real network request actually settles, not before.
+    fetchArticles()
+      .then(load)
+      .finally(() => setIsLoading(false));
     return subscribe(load);
   }, []);
 
@@ -109,7 +129,12 @@ export default function Homepage() {
         </div>
 
         <div>
-          {ordered.length > 0 ? (
+          {isLoading ? (
+            <div data-state="loading" className="py-16 text-center">
+              <img src={loadingGif} alt="Loading" className="mx-auto h-16 w-16" />
+              <p className="mt-3 font-mono text-sm text-slate-400">Loading stories…</p>
+            </div>
+          ) : ordered.length > 0 ? (
             ordered.map((article) => (
               <ArticleRow
                 key={article.id}
@@ -119,8 +144,17 @@ export default function Homepage() {
                 eyebrow={article.id === featured?.id ? "Lead story" : undefined}
               />
             ))
+          ) : allArticles.length === 0 ? (
+            // Genuinely no published articles anywhere yet (fresh site).
+            <div data-state="no-articles" className="py-16 text-center">
+              <img src={emptyStateGif} alt="No articles yet" className="mx-auto h-32 w-32" />
+              <p className="font-mono text-sm text-slate-400">
+                No stories published yet. Check back soon.
+              </p>
+            </div>
           ) : (
-            <div className="py-16 text-center">
+            // Articles exist, just none match the current search/category.
+            <div data-state="no-matches" className="py-16 text-center">
               <p className="font-mono text-sm text-slate-400">
                 No stories match that search. Try a different keyword or category.
               </p>
