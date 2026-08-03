@@ -21,6 +21,22 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
 
+  if (res.status === 401) {
+    // Session expired or token otherwise invalid/missing. Clear it and send
+    // the user back to login rather than letting every protected action
+    // fail silently/individually — but only if we actually had a token to
+    // begin with (skip this on the login request itself, e.g. bad
+    // credentials, which should just show an inline error instead).
+    if (authToken) {
+      setAuthToken(null);
+      if (!window.location.pathname.startsWith("/admin/login")) {
+        window.location.href = "/admin/login?expired=1";
+      }
+    }
+    const text = await res.text().catch(() => "");
+    throw new Error(text || "Session expired. Please log in again.");
+  }
+
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(text || `Request failed: ${res.status}`);
@@ -43,6 +59,13 @@ async function upload(path: string, file: File): Promise<{ url: string }> {
   // multipart/form-data with the correct boundary itself.
 
   const res = await fetch(`${API_URL}${path}`, { method: "POST", body: formData, headers });
+
+  if (res.status === 401 && authToken) {
+    setAuthToken(null);
+    if (!window.location.pathname.startsWith("/admin/login")) {
+      window.location.href = "/admin/login?expired=1";
+    }
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
