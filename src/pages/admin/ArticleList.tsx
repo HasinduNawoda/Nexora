@@ -20,6 +20,8 @@ export default function ArticleList() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "PUBLISHED" | "DRAFT">("all");
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [articles, setArticles] = useState(() => getArticles());
 
   // Re-read from the store whenever it changes (e.g. after publishing a new
@@ -38,10 +40,20 @@ export default function ArticleList() {
     return matchesQuery && matchesStatus;
   });
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteTargetId === null) return;
-    deleteArticle(deleteTargetId);
-    setDeleteTargetId(null);
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteArticle(deleteTargetId);
+      setDeleteTargetId(null);
+    } catch (err) {
+      // Surface the real reason instead of failing silently — the backend
+      // returns a JSON {"error": "..."} body for auth failures in particular.
+      setDeleteError(err instanceof Error ? err.message : "Failed to delete article. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -158,7 +170,10 @@ export default function ArticleList() {
                           </svg>
                         </button>
                         <button
-                          onClick={() => setDeleteTargetId(article.id)}
+                          onClick={() => {
+                setDeleteError(null);
+                setDeleteTargetId(article.id);
+              }}
                           className="rounded-md p-1.5 text-zinc-400 hover:bg-red-50 hover:text-red-600 transition-colors"
                           title="Delete"
                         >
@@ -197,18 +212,25 @@ export default function ArticleList() {
             <p className="mb-5 text-sm text-zinc-500">
               This action cannot be undone. The article will be permanently removed.
             </p>
+            {deleteError && (
+              <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {deleteError}
+              </p>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteTargetId(null)}
-                className="flex-1 rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                disabled={isDeleting}
+                className="flex-1 rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                className="flex-1 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+                disabled={isDeleting}
+                className="flex-1 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50"
               >
-                Delete
+                {isDeleting ? "Deleting…" : "Delete"}
               </button>
             </div>
           </div>
