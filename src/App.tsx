@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop"; 
+import NewsFeed from "./pages/admin/NewsFeed";
 import Homepage from "./pages/Homepage";
 import ArticlePage from "./pages/ArticlePage";
 import About from "./pages/About";
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/admin/articles/new" element={<ProtectedRoute><ArticleEditor /></ProtectedRoute>} />
         <Route path="/admin/articles/:id/edit" element={<ProtectedRoute><ArticleEditor /></ProtectedRoute>} />
         <Route path="/admin/categories" element={<ProtectedRoute><CategoryManager /></ProtectedRoute>} />
+        <Route path="/admin/news-feed" element={<ProtectedRoute><NewsFeed /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
