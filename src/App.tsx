@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop"; 
 import NewsFeed from "./pages/admin/NewsFeed";
+import GmailCallback from "./pages/admin/GmailCallback";
 import Homepage from "./pages/Homepage";
 import ArticlePage from "./pages/ArticlePage";
 import About from "./pages/About";
@@ -32,6 +33,9 @@ export default function App() {
 
         {/* Admin auth */}
         <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* Gmail OAuth callback — public, Google redirects browser here with ?code=&state= */}
+        <Route path="/admin/gmail/callback" element={<GmailCallback />} />
 
         {/* Protected admin routes */}
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
