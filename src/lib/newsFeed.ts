@@ -157,3 +157,51 @@ export async function bulkSetRead(ids: number[], read: boolean): Promise<void> {
 export async function bulkDismiss(ids: number[]): Promise<void> {
   await Promise.all(ids.map((id) => dismissNewsItem(id)));
 }
+
+// ============================================================================
+// Ad-hoc Gmail fetch, filtered by sender (admin-managed, not persisted)
+// ============================================================================
+// Hits GET /admin/news/gmail-fetch — a live query against the connected
+// Gmail account (requires GmailConnectionPanel's "Connect Gmail" first), not
+// the persisted NewsItem feed above. The backend returns a raw list of
+// per-message maps; on any internal error it instead returns a single
+// { error } item, and on no matches a single { snippet } item with no id —
+// both are normalized away here rather than leaking into the UI as a fake row.
+
+export interface GmailFetchedEmail {
+  id: string;
+  sender: string;
+  subject: string;
+  snippet: string;
+}
+
+interface RawGmailFetchItem {
+  id?: string;
+  sender?: string;
+  subject?: string;
+  snippet?: string;
+  error?: string;
+}
+
+export async function fetchGmailNewsBySenders(senders: string[]): Promise<GmailFetchedEmail[]> {
+  const params = new URLSearchParams();
+  senders.filter(Boolean).forEach((s) => params.append("senders", s));
+  const query = params.toString();
+
+  const raw = await api.get<RawGmailFetchItem[]>(
+    `/admin/news/gmail-fetch${query ? `?${query}` : ""}`
+  );
+
+  if (raw.length === 1 && raw[0].error) {
+    throw new Error(raw[0].error);
+  }
+
+  return raw
+    .filter((item): item is RawGmailFetchItem & { id: string } => Boolean(item.id))
+    .map((item) => ({
+      id: item.id,
+      sender: item.sender || "Unknown sender",
+      subject: item.subject || "(No subject)",
+      snippet: item.snippet || "",
+    }));
+}
