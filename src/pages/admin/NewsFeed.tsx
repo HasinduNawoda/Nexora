@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
-import GmailConnectionPanel from "../../components/admin/GmailConnectionPanel";
 import { fetchGmailNewsBySenders, type GmailFetchedEmail } from "../../lib/newsFeed";
 
 interface Sender {
@@ -80,7 +79,6 @@ export default function NewsFeed() {
 
   return (
     <AdminLayout title="News Feed">
-      <GmailConnectionPanel />
 
       {/* Toolbar */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
