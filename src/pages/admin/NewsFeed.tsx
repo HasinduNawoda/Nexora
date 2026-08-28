@@ -8,15 +8,42 @@ interface Sender {
   handle: string;
 }
 
+const SENDERS_STORAGE_KEY = "nexora-news-senders";
+
+const DEFAULT_SENDERS: Sender[] = [
+  { id: crypto.randomUUID(), name: "OpenAI", handle: "@openai.com" },
+  { id: crypto.randomUUID(), name: "TechCrunch", handle: "@techcrunch.com" },
+];
+
+/** Reads the persisted sender list from localStorage. Falls back to the
+ * built-in defaults if nothing is stored yet, or if the stored value is
+ * missing/corrupt — this must never throw, since it runs during initial
+ * render. */
+function loadStoredSenders(): Sender[] {
+  try {
+    const raw = window.localStorage.getItem(SENDERS_STORAGE_KEY);
+    if (!raw) return DEFAULT_SENDERS;
+    const parsed = JSON.parse(raw);
+    if (
+      Array.isArray(parsed) &&
+      parsed.every(
+        (s) => s && typeof s.id === "string" && typeof s.name === "string" && typeof s.handle === "string"
+      )
+    ) {
+      return parsed as Sender[];
+    }
+    return DEFAULT_SENDERS;
+  } catch {
+    return DEFAULT_SENDERS;
+  }
+}
+
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
 export default function NewsFeed() {
-  const [senders, setSenders] = useState<Sender[]>([
-    { id: crypto.randomUUID(), name: "OpenAI", handle: "@openai.com" },
-    { id: crypto.randomUUID(), name: "TechCrunch", handle: "@techcrunch.com" },
-  ]);
+  const [senders, setSenders] = useState<Sender[]>(() => loadStoredSenders());
   const [showSenders, setShowSenders] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [handleInput, setHandleInput] = useState("");
@@ -72,6 +99,17 @@ export default function NewsFeed() {
   const removeSender = (id: string) => {
     setSenders((prev) => prev.filter((s) => s.id !== id));
   };
+
+  // Persist to localStorage on every add/remove so the list survives a
+  // refresh. Wrapped in try/catch: storage can be unavailable (private
+  // browsing, quota exceeded) and that must never crash the page.
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(SENDERS_STORAGE_KEY, JSON.stringify(senders));
+    } catch {
+      // Non-fatal: worst case the list just won't persist this time.
+    }
+  }, [senders]);
 
   const toggleExpand = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
