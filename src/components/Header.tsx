@@ -49,7 +49,7 @@ export default function Header({
           onClick={() => navigate("/admin")}
           className="shrink-0 rounded-md bg-[#0B0F1A] px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#1a2238] focus:outline-none focus:ring-2 focus:ring-[#3D5AFE]/40"
         >
-          Admin
+          Login
         </button>
       </div>
 

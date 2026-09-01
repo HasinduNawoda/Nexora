@@ -31,7 +31,7 @@ export default function AdminLogin() {
       setAuthToken(token);
       navigate("/admin");
     } catch {
-      setError("Invalid username or password.");
+      setError("Login / Register is not yet implemented.");
     } finally {
       setLoading(false);
     }
@@ -43,7 +43,6 @@ export default function AdminLogin() {
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-2">
           <Logo variant="admin" size="lg" linkTo={null} />
-          <p className="font-mono text-xs text-zinc-400 uppercase tracking-widest">Admin Portal</p>
         </div>
 
         {/* Card */}
@@ -62,7 +61,6 @@ export default function AdminLogin() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                placeholder="admin"
                 className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
               />
             </div>
